@@ -31,7 +31,7 @@ argInfo :: O.ParserInfo String
 argInfo = O.info (argParser O.<**> O.helper)
   ( O.fullDesc
   <> O.progDesc "Generate code from TEMPLATE"
-  <> O.header "hs-generator - yesod partioal code generator" )
+  <> O.header "hs-generator - yesod partial code generator" )
 
 -- ginger
 
