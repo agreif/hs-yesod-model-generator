@@ -1,0 +1,30 @@
+{% include 'macros.gtmpl' -%}
+
+{% for model in models %}
+{% if model.isInDb %}
+{% if model.dbHasHistoryTable %}
+
+drop function public.process_audit_{{model.dbTableName}}() cascade;
+create or replace function public.process_audit_{{model.dbTableName}}()
+ returns trigger
+ language plpgsql
+as $function$
+   begin
+       if to_regclass('{{model.dbHistoryTableName}}') is not null then
+           if (TG_OP = 'UPDATE' or TG_OP = 'INSERT') then
+                insert into {{model.dbHistoryTableName}}
+                       (id, {% for field in model.fields %}{% if field.db %}{{field.dbColumnName|prefixCommaUnlessLoopFirst}}{% endif %}{% endfor %}, version, created_at, created_by, updated_at, updated_by)
+                       values
+                       (new.id, {% for field in model.fields %}{% if field.db %}{{('new.' ~ field.dbColumnName)|prefixCommaUnlessLoopFirst}}{% endif %}{% endfor %}, new.version, new.created_at, new.created_by, new.updated_at, new.updated_by);
+                return new;
+            end if;
+       end if;
+       return null; -- result is ignored since this is an after trigger
+    end;
+$function$;
+
+create trigger audit_{{model.dbTableName}} after insert or update on public.{{model.dbTableName}} for each row execute procedure public.process_audit_{{model.dbTableName}}();
+
+{%- endif -%}
+{%- endif -%}
+{% endfor %}

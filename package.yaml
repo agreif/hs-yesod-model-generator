@@ -1,0 +1,23 @@
+name: hs-yesod-model-generator
+version: '0.0.0'
+github: "greifit1/hs-yesod-model-generator"
+license: BSD3
+author: "Greit-IT"
+maintainer: "Greif-IT"
+
+extra-source-files:
+- LICENSE
+- package.yaml
+
+ghc-options: -Wall
+
+library:
+  dependencies:
+  - base
+  - text
+  - ginger
+  - aeson
+  - strict
+  - optparse-applicative
+  - casing
+  source-dirs: src

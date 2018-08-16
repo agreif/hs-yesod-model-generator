@@ -1,0 +1,63 @@
+{% include 'macros.gtmpl' -%}
+
+data MsgGlobal =
+{%- for translation in translations %}
+  {{('MsgGlobal' ~ translation.keyCap)|prefixGuardUnlessLoopLast -}}
+{%- endfor %}
+
+instance RenderMessage App MsgGlobal where
+  renderMessage _ []        = renderGlobalGerman
+  renderMessage _ ("de":_) = renderGlobalGerman
+  renderMessage _ ("en":_) = renderGlobalEnglish
+  renderMessage _ ("en-US":_) = renderGlobalEnglish
+  renderMessage m (_:ls) = renderMessage m ls
+
+renderGlobalGerman :: MsgGlobal -> Text
+{%- for translation in translations %}
+renderGlobalGerman {{'MsgGlobal' ~ translation.keyCap}} = "{{translation.de}}"
+{%- endfor %}
+
+renderGlobalEnglish :: MsgGlobal -> Text
+{%- for translation in translations %}
+renderGlobalEnglish {{'MsgGlobal' ~ translation.keyCap}} = "{{translation.en}}"
+{%- endfor %}
+
+data Translation = Translation
+{%- for translation in translations %}
+  {{loop.first ? "{ " : "" -}}
+  {{('msgGlobal' ~ translation.keyCap)|prefixCommaUnlessLoopFirst}} :: Maybe Text
+{%- endfor -%}
+{%- for model in models %}
+{%- for field in model.fields %}
+  {{', msg' ~ model.nameCap ~ field.nameCap}} :: Maybe Text
+{%- endfor %}
+{%- endfor %}
+  } deriving Generic
+
+instance ToJSON Translation
+
+translationDe :: Translation
+translationDe = Translation
+{%- for translation in translations %}
+  {{loop.first ? "{ " : "" -}}
+  {{('msgGlobal' ~ translation.keyCap)|prefixCommaUnlessLoopFirst}} = Just "{{translation.de}}"
+{%- endfor -%}
+{%- for model in models %}
+{%- for field in model.fields %}
+  {{', msg' ~ model.nameCap ~ field.nameCap}} = {{field.labelDe ? 'Just "' ~ field.labelDe ~ '"' : 'Nothing'}}
+{%- endfor %}
+{%- endfor %}
+  }
+
+translationEn :: Translation
+translationEn = Translation
+{%- for translation in translations %}
+  {{loop.first ? "{ " : "" -}}
+  {{('msgGlobal' ~ translation.keyCap)|prefixCommaUnlessLoopFirst}} = Just "{{translation.en}}"
+{%- endfor -%}
+{%- for model in models %}
+{%- for field in model.fields %}
+  {{', msg' ~ model.nameCap ~ field.nameCap}} = {{field.labelDe ? 'Just "' ~ field.labelEn ~ '"' : 'Nothing'}}
+{%- endfor %}
+{%- endfor %}
+  }

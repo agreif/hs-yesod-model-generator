@@ -1,0 +1,10 @@
+postDelete{{model.nameCap}}R :: {{model.nameCap}}Id -> Handler Value
+postDelete{{model.nameCap}}R {{model.name}}Id = do
+  {% if model.deletePostLoadsModel -%}
+  {{ model.name }} <- runDB $ get404 {{model.name}}Id
+  {% endif -%}
+  runDB $ delete {{model.name}}Id
+  urlRenderer <- getUrlRender
+  returnJson $ VFormSubmitSuccess { fsSuccessDataJsonUrl = urlRenderer $ {{model.deleteFormDataJsonUrl}} }
+
+{{- '' -}}

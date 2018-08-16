@@ -1,0 +1,14 @@
+{% include 'macros.gtmpl' -%}
+
+data VAdd{{model.nameCap}} = VAdd{{model.nameCap}}
+  { {{''}}
+  {%- for field in model.addViewFields -%}
+    {{concat("vAdd", model.nameCap, field.nameCap, " :: ", field.addView.isRequired ? '' : 'Maybe ', field.hsType)|prefixCommaUnlessLoopFirst}}
+  {% endfor -%}
+  }
+  {%- if model.hsDerivings %}
+    deriving {%- for hsDeriving in model.hsDerivings %} {{hsDeriving}}{%- endfor %}
+  {%- endif -%}
+
+
+{{- '' -}}
