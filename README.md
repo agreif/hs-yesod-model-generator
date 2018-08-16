@@ -1,0 +1,1 @@
+# hs-yesod-model-generator
