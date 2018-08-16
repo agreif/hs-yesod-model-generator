@@ -9,6 +9,9 @@ extra-source-files:
 - LICENSE
 - package.yaml
 
+data-files:
+  - ginger/*.gtmpl
+
 ghc-options: -Wall
 
 library:
