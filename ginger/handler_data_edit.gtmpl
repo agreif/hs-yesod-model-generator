@@ -1,0 +1,14 @@
+{% include 'macros.gtmpl' -%}
+
+data VEdit{{model.nameCap}} = VEdit{{model.nameCap}}
+  { {{''}}
+  {%- for field in model.editViewFields -%}
+    {{concat("vEdit", model.nameCap, field.nameCap, " :: ", field.editView.isRequired ? '' : 'Maybe ', field.hsType)|prefixCommaUnlessLoopFirst}}
+  {% endfor -%}
+  , vEdit{{model.nameCap}}Version :: Int
+  }
+  {%- if model.hsDerivings %}
+    deriving {%- for hsDeriving in model.hsDerivings %} {{hsDeriving}}{%- endfor %}
+  {%- endif -%}
+
+{{- '' -}}

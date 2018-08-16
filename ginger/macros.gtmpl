@@ -1,0 +1,23 @@
+{%- macro shakesUrl(str) -%}
+  {{ '@{' ~ str|capitalize ~ '}' }}
+{%- endmacro -%}
+
+{%- macro shakesMsg(str) -%}
+  {{ '_{' ~ str ~ '}' }}
+{%- endmacro -%}
+
+{%- macro appendCommaUnlessLoopLast(str) -%}
+  {{ str ~ (loop.last ? "" : ",") }}
+{%- endmacro -%}
+
+{%- macro prefixCommaUnlessLoopFirst(str) -%}
+  {{ (loop.first ? "" : ", ") ~ str }}
+{%- endmacro -%}
+
+{%- macro prefixGuardUnlessLoopLast(str) -%}
+  {{ (loop.first ? "" : "| ") ~ str }}
+{%- endmacro -%}
+
+{%- macro cap(str) -%}
+  {{ str|capitalize }}
+{%- endmacro -%}

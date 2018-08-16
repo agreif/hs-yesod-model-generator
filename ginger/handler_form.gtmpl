@@ -1,0 +1,116 @@
+{% include 'macros.gtmpl' -%}
+
+v{{_formType}}{{model.nameCap}}Form :: Maybe {{model.nameCap}} -> Html -> MForm Handler (FormResult V{{_formType}}{{model.nameCap}}, Widget)
+v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}} extra = do
+  {%- for field in _fields %}
+  {%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+  {%- if _view %}
+  ({{field.name}}Result, {{field.name}}View) <- {{_view.isRequired ? 'mreq' : 'mopt'}}{{' '}}
+      {%- if field.belongsTo %}
+        {{- '(' ~ field.formFieldType ~ ' ' ~ field.name ~ 'Options)' }}
+      {%- else %}
+        {{- field.formFieldType }}
+      {%- endif %}
+    {{field.name}}Fs
+    {% if _view.default == null -%}
+      ({{_view.isOptional && field.db.isNotNullable ? 'Just $ ' : ''}}{{model.name}}{{field.nameCap}} <$> maybe{{model.nameCap}})
+    {%- else -%}
+      ({{ _view.default }})
+    {%- endif -%}
+  {%- endif -%}
+  {%- endfor %}
+  {%- if _formType == 'Edit' %}
+  (versionResult, versionView) <- mreq hiddenField
+    versionFs
+    ({{model.name}}Version <$> maybe{{model.nameCap}})
+  {%- endif %}
+  let v{{_formType}}{{model.nameCap}}Result = V{{_formType}}{{model.nameCap}}
+    {%- for field in _fields %}
+    {%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+    {%- if _view -%}
+        {{loop.first ? ' <$> ' : ' <*> '}}{{field.name}}Result
+    {%- endif -%}
+    {%- endfor -%}
+    {%- if _formType == 'Edit' -%}
+    {{' '}}<*> versionResult
+    {%- endif %}
+  let formWidget = toWidget [whamlet|
+    #{extra}
+    {%- if _formType == 'Edit' %}
+    ^{fvInput versionView}
+    {%- endif %}
+    {%- for field in _fields %}
+    {%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+    {%- if _view %}
+    <div .uk-margin-small :not $ null $ fvErrors {{field.name}}View:.uk-form-danger>
+      <label .uk-form-label :not $ null $ fvErrors {{field.name}}View:.uk-text-danger for=#{fvId {{field.name}}View}>#{fvLabel {{field.name}}View}
+      <div .uk-form-controls>
+        ^{fvInput {{field.name}}View}
+        $maybe err <- fvErrors {{field.name}}View
+          &nbsp;#{err}
+    {%- endif -%}
+    {%- endfor %}
+    |]
+  return (v{{_formType}}{{model.nameCap}}Result, formWidget)
+  where
+    {%- for field in model.belongsToFields -%}
+      {{ field.name ~ 'Options = optionsPersistKey [] [Asc ' ~ field.belongsTo.modelCap ~ field.belongsTo.sortFieldCap ~ '] ' ~ field.belongsTo.model ~ field.belongsTo.dispFieldCap }}
+    {% endfor -%}
+    {%- for field in _fields %}
+    {%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+    {%- if _view %}
+    {{field.name}}Fs :: FieldSettings App
+    {{field.name}}Fs = FieldSettings
+      { fsLabel = SomeMessage {{'Msg' ~ _formType ~ model.nameCap ~ field.nameCap}}
+      , fsTooltip = Nothing
+      , fsId = Just "{{field.name}}"
+      , fsName = Just "{{field.name}}"
+      , fsAttrs = [ {% for attr in _view.attrs -%}
+                  {{concat("(\"", attr.key, "\",", "\"", attr.value, "\")")|prefixCommaUnlessLoopFirst}}
+                  {%- endfor %} ]
+      }
+    {%- endif -%}
+    {%- endfor %}
+    {%- if _formType == 'Edit' %}
+    versionFs :: FieldSettings App
+    versionFs = FieldSettings
+      { fsLabel = ""
+      , fsTooltip = Nothing
+      , fsId = Just "version"
+      , fsName = Just "version"
+      , fsAttrs = []
+      }
+    {%- endif %}
+
+data Msg{{_formType}}{{model.nameCap}} =
+{%- for field in _fields %}
+{%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+{%- if _view %}
+  {{('Msg' ~ _formType ~ model.nameCap ~ field.nameCap)|prefixGuardUnlessLoopLast -}}
+{% endif %}
+{%- endfor %}
+
+instance RenderMessage App Msg{{_formType}}{{model.nameCap}} where
+  renderMessage _ []        = render{{_formType}}{{model.nameCap}}German
+  renderMessage _ ("de":_) = render{{_formType}}{{model.nameCap}}German
+  renderMessage _ ("en":_) = render{{_formType}}{{model.nameCap}}English
+  renderMessage _ ("en-US":_) = render{{_formType}}{{model.nameCap}}English
+  renderMessage m (_   :ls) = renderMessage m ls
+
+render{{_formType}}{{model.nameCap}}German :: {{'Msg' ~ _formType ~ model.nameCap}} -> Text
+{% for field in _fields -%}
+{%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+{%- if _view -%}
+render{{_formType}}{{model.nameCap}}German {{'Msg' ~ _formType ~ model.nameCap ~ field.nameCap }} = "{{field.labelDe}}"
+{% endif %}
+{%- endfor %}
+
+render{{_formType}}{{model.nameCap}}English :: {{'Msg' ~ _formType ~ model.nameCap }} -> Text
+{% for field in _fields %}
+{%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+{%- if _view -%}
+render{{_formType}}{{model.nameCap}}English {{'Msg' ~ _formType ~ model.nameCap ~ field.nameCap }} = "{{field.labelEn}}"
+{% endif %}
+{%- endfor %}
+
+{{- '' -}}

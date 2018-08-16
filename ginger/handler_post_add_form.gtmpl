@@ -1,0 +1,30 @@
+{% include 'macros.gtmpl' -%}
+
+postAdd{{model.nameCap}}R :: {{ model.parentHsType ? model.parentHsType ~ 'Id -> ' : '' -}} Handler Value
+postAdd{{model.nameCap}}R {{ model.parentHsParamId ? model.parentHsParamId ~ ' ' : '' -}} = do
+  ((result, formWidget), _) <- runFormPost $ vAdd{{model.nameCap}}Form Nothing
+  case result of
+    FormSuccess vAdd{{model.nameCap}} -> do
+      curTime <- liftIO getCurrentTime
+      Entity _ authUser <- requireAuth
+      urlRenderer <- getUrlRender
+      let {{model.name}} = {{model.nameCap}}
+            {
+          {%- for line in model.hsAddAssignmentLines %}
+            {{prefixCommaUnlessLoopFirst()}}{{line}}
+          {%- endfor %}
+            {{ model.hsAddAssignmentLines || field.addView ? ', ' : ''}}
+            {{- model.name}}Version = 1
+            , {{model.name}}CreatedAt = curTime
+            , {{model.name}}CreatedBy = userIdent authUser
+            , {{model.name}}UpdatedAt = curTime
+            , {{model.name}}UpdatedBy = userIdent authUser
+            }
+      _ <- runDB $ insert {{model.name}}
+      returnJson $ VFormSubmitSuccess { fsSuccessDataJsonUrl = urlRenderer $ {{model.addFormDataJsonUrl}} }
+    _ -> do
+      resultHtml <- formLayout [whamlet|^{formWidget}|]
+      returnJson $ VFormSubmitInvalid
+        { fsInvalidModalWidgetHtml = toStrict $ Blaze.renderHtml resultHtml }
+
+{{- '' -}}

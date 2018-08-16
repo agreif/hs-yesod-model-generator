@@ -1,0 +1,17 @@
+{% include 'macros.gtmpl' -%}
+
+getDelete{{model.nameCap}}FormR :: {{model.nameCap}}Id -> Handler Html
+getDelete{{model.nameCap}}FormR {{model.name}}Id = do
+  {% if model.deleteFormEntityLoader -%}
+  {{ model.deleteFormEntityLoader }}
+  {% endif -%}
+  (formWidget, _) <- generateFormPost $ vDelete{{model.nameCap}}Form
+  formLayout $ do
+    toWidget [whamlet|
+      <h1>{%- if model.deleteFormTitleMsg %}{{ shakesMsg(model.deleteFormTitleMsg) }}{% else %}Delete {{model.label}}{% endif %}
+      <form #modal-form .uk-form-horizontal method=post action={{shakesUrl(model.formRouteHsType ~ ' $ Delete' ~ model.nameCap ~ 'R ' ~ model.name ~ 'Id')}}>
+        <div #modal-form-widget>
+          ^{formWidget}
+      |]
+
+{{- '' -}}

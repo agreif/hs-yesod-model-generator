@@ -1,0 +1,41 @@
+{% for model in models %}
+{% if model.isInDb %}
+{{model.nameCap}}{{model.isJson ? ' json' : ''}}
+{%- for field in model.fields %}
+    {%- if field.db %}
+    {{field.name}} {{field.hsType}}{{field.db.isNullable ? ' Maybe' : '' }}{{field.db.default ? ' default=' ~ field.db.default : ''-}}
+    {% endif %}
+{%- endfor %}
+    version Int
+    createdAt UTCTime
+    createdBy Text
+    updatedAt UTCTime
+    updatedBy Text
+{%- for dbUniqueness in model.dbUniquenesses %}
+    {{dbUniqueness}}
+{%- endfor %}
+{%- if model.hsDerivings %}
+    deriving {%- for hsDeriving in model.hsDerivings %} {{hsDeriving}}{%- endfor %}
+{%- endif %}
+
+{% if model.dbHasHistoryTable %}
+{{model.nameCap}}History
+    Id sql=vid
+    id Int MigrationOnly
+{%- for field in model.fields %}
+    {%- if field.db %}
+    {%- if field.isForeignKey %}
+    {{field.name}} Int{{field.db.isNullable ? ' Maybe' : '' }}
+    {%- else %}
+    {{field.name}} {{field.hsType}}{{field.db.isNullable ? ' Maybe' : '' }}{{field.db.default ? ' default=' ~ field.db.default : ''-}}
+    {%- endif %}
+    {%- endif %}
+{%- endfor %}
+    version Int
+    createdAt UTCTime
+    createdBy Text
+    updatedAt UTCTime
+    updatedBy Text
+{%- endif -%}
+{%- endif -%}
+{% endfor %}

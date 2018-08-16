@@ -1,0 +1,24 @@
+{% include 'macros.gtmpl' -%}
+
+getAdd{{model.nameCap}}FormR :: {{ model.parentHsType ? model.parentHsType ~ 'Id -> ' : '' -}} Handler Html
+getAdd{{model.nameCap}}FormR {{ model.parentHsParamId ? model.parentHsParamId ~ ' ' : '' -}} = do
+  {% if model.addFormHasDefaultModel -%}
+  defaultAddModel <- defaultAdd{{model.nameCap}}{{ model.parentHsParamId ? ' ' ~ model.parentHsParamId : '' }}
+  {% endif -%}
+  {% if model.addFormEntityLoader -%}
+  {{ model.addFormEntityLoader }}
+  {% else %}
+  {%- endif -%}
+  (formWidget, _) <- generateFormPost $ vAdd{{model.nameCap}}Form {{ model.addFormHasDefaultModel ? '$ Just defaultAddModel' : 'Nothing'}}
+  formLayout $ do
+    toWidget [whamlet|
+      <h1>{%- if model.addFormTitleMsg %}{{ shakesMsg(model.addFormTitleMsg) }}{% else %}Add {{model.label}}{% endif %}
+      <form #modal-form .uk-form-horizontal method=post onsubmit="return false;" action={{shakesUrl(model.formRouteHsType ~ ' $ Add' ~ model.nameCap ~ 'R' ~ (model.parentHsParamId ? ' ' ~ model.parentHsParamId : ''))}}>
+        <div #modal-form-widget>
+          ^{formWidget}
+      {% if model.formHasProgressBar -%}
+      <progress id="modal-form-progressbar" class="uk-progress" value="0" max="0">
+      {% endif -%}
+      |]
+
+{{- '' -}}

@@ -1,0 +1,19 @@
+{% include 'macros.gtmpl' -%}
+
+getEdit{{model.nameCap}}FormR :: {{model.nameCap}}Id -> Handler Html
+getEdit{{model.nameCap}}FormR {{model.name}}Id = do
+  {% if model.editFormEntityLoader -%}
+  {{ model.editFormEntityLoader }}
+  {%- else -%}
+  {{model.name}} <- runDB $ get404 {{model.name}}Id
+  {%- endif %}
+  (formWidget, _) <- generateFormPost $ vEdit{{model.nameCap}}Form $ Just {{model.name}}
+  formLayout $ do
+    toWidget [whamlet|
+      <h1>{%- if model.editFormTitleMsg %}{{ shakesMsg(model.editFormTitleMsg) }}{% else %}Edit {{model.label}}{% endif %}
+      <form #modal-form .uk-form-horizontal method=post onsubmit="return false;" action={{shakesUrl(model.formRouteHsType ~ ' $ Edit' ~ model.nameCap ~ 'R ' ~ model.name ~ 'Id')}}>
+        <div #modal-form-widget>
+          ^{formWidget}
+      |]
+
+{{- '' -}}

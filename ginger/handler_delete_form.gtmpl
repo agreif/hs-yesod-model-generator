@@ -1,0 +1,7 @@
+vDelete{{model.nameCap}}Form :: Html -> MForm Handler (FormResult (), Widget)
+vDelete{{model.nameCap}}Form extra = do
+  let formResult = mempty
+  let formWidget = [whamlet|#{extra} _{MsgGlobalReallyDelete}|]
+  return (formResult, formWidget)
+
+{{- '' -}}
