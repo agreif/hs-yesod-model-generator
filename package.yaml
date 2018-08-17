@@ -23,4 +23,7 @@ library:
   - strict
   - optparse-applicative
   - casing
+  - bytestring
+  - utf8-string
+  - file-embed
   source-dirs: src
