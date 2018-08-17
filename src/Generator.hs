@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Generator where
 
 import Data.Text (Text)
@@ -14,20 +15,26 @@ import qualified System.IO.Strict as SIOS
 import qualified System.IO.Error as SIOE
 import qualified Options.Applicative as O
 import qualified GHC.IO.Encoding as E
+import Data.FileEmbed
+import qualified Data.ByteString
+import qualified Data.ByteString.UTF8 as UTF8
 
 generate :: Value -> IO ()
 generate context = do
   E.setLocaleEncoding E.utf8
-  templFile <- O.execParser argInfo
-  template <- loadTemplate templFile
+  args <- O.execParser argInfo
+  let (templFile, maybeModelName) = case args of
+        [a1   ] -> (a1, Nothing)
+        [a1,a2] -> (a1, Just a2)
+  template <- loadTemplate templFile maybeModelName
   putStrLn . Text.unpack $ G.easyRender context template
 
 -- command line parser
 
-argParser :: O.Parser String
-argParser = O.argument O.str (O.metavar "TEMPLATE" <> O.help "Ginger template file")
+argParser :: O.Parser [String]
+argParser = O.many (O.argument O.str O.showDefault )
 
-argInfo :: O.ParserInfo String
+argInfo :: O.ParserInfo [String]
 argInfo = O.info (argParser O.<**> O.helper)
   ( O.fullDesc
   <> O.progDesc "Generate code from TEMPLATE"
@@ -35,35 +42,50 @@ argInfo = O.info (argParser O.<**> O.helper)
 
 -- ginger
 
-loadTemplate :: String -> IO (G.Template G.SourcePos)
-loadTemplate templFile = do
-  eitherTemplate <- G.parseGingerFile' opts templFile
+loadTemplate :: String -> Maybe String -> IO (G.Template G.SourcePos)
+loadTemplate templFile maybeModelName = do
+  eitherTemplate <- G.parseGingerFile' (opts maybeModelName) templFile
   return $ case eitherTemplate of
              Left err -> error . show $ err
              Right template' -> template'
 
-opts :: G.ParserOptions IO
-opts = (G.mkParserOptions fileResolver) { G.poSourceName = Nothing
-                                        , G.poKeepTrailingNewline = True }
+opts :: Maybe String -> G.ParserOptions IO
+opts maybeModelName =
+  (G.mkParserOptions (fileResolver maybeModelName)) { G.poSourceName = Nothing
+                                                    , G.poKeepTrailingNewline = True }
 
-fileResolver :: G.IncludeResolver IO
-fileResolver filename = do
+fileResolver :: Maybe String -> G.IncludeResolver IO
+fileResolver maybeModelName filename = do
   content <- loadFile filename
-  return $ Just content
+  let content' = case maybeModelName of
+        Just modelName -> "{%- set model = " ++ modelName ++ "Model -%}\n" ++ content
+        _ -> content
+  return $ Just content'
 
 loadFile :: FilePath -> IO String
-loadFile fn =
+loadFile fn = do
+  cachedFileContents <- getCachedFileContents
   SIOE.tryIOError (loadFile' $ "ginger/" ++ fn) >>= \e ->
     case e of
       Right contents -> return contents
-      Left err -> return $ show err
-  where
-    loadFile' :: FilePath -> IO String
-    loadFile' fn' = do
-      SIO.withFile fn' SIO.ReadMode $ \h -> do
-        SIO.hSetEncoding h SIO.utf8_bom
-        contents <- SIOS.hGetContents h
-        return contents
+      Left err -> do
+        case L.lookup fn cachedFileContents of
+          Just content -> return $ UTF8.toString content
+          _ -> return $ show err
+    where
+      loadFile' :: FilePath -> IO String
+      loadFile' fn' = do
+        SIO.withFile fn' SIO.ReadMode $ \h -> do
+          SIO.hSetEncoding h SIO.utf8_bom
+          contents <- SIOS.hGetContents h
+          return contents
+
+getCachedFileContents :: IO [(FilePath, Data.ByteString.ByteString)]
+getCachedFileContents = do
+  let tuples1 = $(embedDir "ginger")
+  -- create also filenames wir leading './'
+  let tuples2 = L.map (\(fn,bs) -> ("./" ++ fn,bs)) tuples1
+  return $ tuples1 ++ tuples2
 
 -- helpers
 
