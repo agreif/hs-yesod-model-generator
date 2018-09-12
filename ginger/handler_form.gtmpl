@@ -1,7 +1,9 @@
 {% include 'macros.gtmpl' -%}
 
-v{{_formType}}{{model.nameCap}}Form :: Maybe {{model.nameCap}} -> Html -> MForm Handler (FormResult V{{_formType}}{{model.nameCap}}, Widget)
-v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}} extra = do
+{% set _formArgs = _formType == 'Add' ? model.addFormArgs : model.editFormArgs -%}
+
+v{{_formType}}{{model.nameCap}}Form :: Maybe {{model.nameCap}} ->{% for arg in _formArgs %} {{arg.type}} ->{% endfor %} Html -> MForm Handler (FormResult V{{_formType}}{{model.nameCap}}, Widget)
+v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArgs %} {{arg.name}} {% endfor %} extra = do
   {%- for field in _fields %}
   {%- set _view = _formType == 'Add' ? field.addView : field.editView %}
   {%- if _view %}

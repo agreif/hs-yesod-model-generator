@@ -116,6 +116,8 @@ data BModel = BModel
   , bModelDbHasHistoryTable :: Bool
   , bModelHsDerivings :: [Text]
   , bModelFields :: [BField]
+  , bModelAddFormArgs :: Maybe [BFuncArg]
+  , bModelEditFormArgs :: Maybe [BFuncArg]
   , bModelAddFormEntityLoader :: Maybe Text
   , bModelEditFormEntityLoader :: Maybe Text
   , bModelDeleteFormEntityLoader :: Maybe Text
@@ -125,6 +127,8 @@ data BModel = BModel
   , bModelAddFormHasDefaultModel :: Bool
   , bModelEditPostLoadsModel :: Bool
   , bModelDeletePostLoadsModel :: Bool
+  , bModelAddPostExtraStoreFunc :: Maybe Text
+  , bModelEditPostExtraStoreFunc :: Maybe Text
   , bModelAddFormTitleMsg :: Maybe Text
   , bModelEditFormTitleMsg :: Maybe Text
   , bModelDeleteFormTitleMsg :: Maybe Text
@@ -153,6 +157,8 @@ instance ToJSON BModel where
     , "addViewFields" .= (filter (\field -> M.isJust $ bFieldAddView field) $ bModelFields o)
     , "editViewFields" .= (filter (\field -> M.isJust $ bFieldEditView field) $ bModelFields o)
     , "isInDb" .= (L.any M.isJust $ L.map bFieldDb $ bModelFields o)
+    , "addFormArgs" .= bModelAddFormArgs o
+    , "editFormArgs" .= bModelEditFormArgs o
     , "addFormEntityLoader" .= bModelAddFormEntityLoader o
     , "editFormEntityLoader" .= bModelEditFormEntityLoader o
     , "deleteFormEntityLoader" .= bModelDeleteFormEntityLoader o
@@ -162,6 +168,8 @@ instance ToJSON BModel where
     , "addFormHasDefaultModel" .= bModelAddFormHasDefaultModel o
     , "editPostLoadsModel" .= bModelEditPostLoadsModel o
     , "deletePostLoadsModel" .= bModelDeletePostLoadsModel o
+    , "addPostExtraStoreFunc" .= bModelAddPostExtraStoreFunc o
+    , "editPostExtraStoreFunc" .= bModelEditPostExtraStoreFunc o
     , "addFormTitleMsg" .= bModelAddFormTitleMsg o
     , "editFormTitleMsg" .= bModelEditFormTitleMsg o
     , "deleteFormTitleMsg" .= bModelDeleteFormTitleMsg o
@@ -211,6 +219,19 @@ instance ToJSON BTranslation where
     , "de" .= bTranslationDe o
     , "en" .= bTranslationEn o
     ]
+
+
+data BFuncArg = BFuncArg
+  { bFuncArgType :: Text
+  , bFuncArgName :: Text
+  }
+
+instance ToJSON BFuncArg where
+  toJSON o = object
+    [ "type" .= bFuncArgType o
+    , "name" .= bFuncArgName o
+    ]
+
 
 
 data BFieldDb = BFieldDb
