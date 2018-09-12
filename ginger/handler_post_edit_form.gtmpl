@@ -2,7 +2,7 @@
 
 postEdit{{model.nameCap}}R :: {{model.nameCap}}Id -> Handler Value
 postEdit{{model.nameCap}}R {{model.name}}Id = do
-  ((result, formWidget), _) <- runFormPost $ vEdit{{model.nameCap}}Form Nothing
+  ((result, formWidget), _) <- runFormPost $ vEdit{{model.nameCap}}Form Nothing{% for arg in model.editFormArgs %} Nothing{% endfor %}
   case result of
     FormSuccess vEdit{{model.nameCap}} -> do
       curTime <- liftIO getCurrentTime
@@ -20,9 +20,14 @@ postEdit{{model.nameCap}}R {{model.name}}Id = do
             , {{model.nameCap}}UpdatedAt =. curTime
             , {{model.nameCap}}UpdatedBy =. userIdent authUser
             ]
-      updateCount <- runDB $ updateWhereCount [ {{model.nameCap}}Id ==. {{model.name}}Id
-                                              , {{model.nameCap}}Version ==. vEdit{{model.nameCap}}Version vEdit{{model.nameCap}}
-                                              ] persistFields
+      updateCount <- runDB $ do
+        uc <- updateWhereCount [ {{model.nameCap}}Id ==. {{model.name}}Id
+                               , {{model.nameCap}}Version ==. vEdit{{model.nameCap}}Version vEdit{{model.nameCap}}
+                               ] persistFields
+        {%- if model.editPostExtraStoreFunc %}
+        {{model.editPostExtraStoreFunc -}}
+        {% endif %}
+        return uc
       if updateCount == 1
         then returnJson $ VFormSubmitSuccess { fsSuccessDataJsonUrl = urlRenderer $ {{model.editFormDataJsonUrl}} }
         else returnJson $ VFormSubmitStale { fsStaleDataJsonUrl = urlRenderer $ {{model.editFormDataJsonUrl}} }
