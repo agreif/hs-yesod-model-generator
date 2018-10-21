@@ -1,4 +1,4 @@
-{% for model in models %}
+{% for model in crudModels %}
 {% if model.isInDb %}
 {{model.nameCap}}{{model.isJson ? ' json' : ''}}
 {%- for field in model.fields %}

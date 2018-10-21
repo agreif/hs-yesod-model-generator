@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
+
 module Generator where
 
 import Data.Text (Text)
@@ -98,110 +99,110 @@ lowerFirst t = Text.append (Text.toLower $ Text.take 1 t) (Text.drop 1 t)
 -- types
 
 data BContext = BContext
-  { bContextModels :: [BModel]
+  { bContextCrudModels :: [BCrudModel]
   , bContextTranslations :: [BTranslation]
   }
 
 instance ToJSON BContext where
   toJSON o = object $
-    [ "models" .= bContextModels o
+    [ "crudModels" .= bContextCrudModels o
     , "translations" .= bContextTranslations o
-    ] ++ (map (\bModel@(BModel {bModelName = modelName}) -> (modelName <> "Model") .= bModel) $ bContextModels o)
+    ] ++ (map (\bCrudModel@(BCrudModel {bCrudModelName = modelName}) -> (modelName <> "Model") .= bCrudModel) $ bContextCrudModels o)
 
-data BModel = BModel
-  { bModelName :: Text
-  , bModelLabel :: Text
-  , bModelIsJson :: Bool
-  , bModelDbUniquenesses :: [Text]
-  , bModelDbHasHistoryTable :: Bool
-  , bModelHsDerivings :: [Text]
-  , bModelFields :: [BField]
-  , bModelAddFormArgs :: Maybe [BFuncArg]
-  , bModelEditFormArgs :: Maybe [BFuncArg]
-  , bModelAddFormEntityLoader :: Maybe Text
-  , bModelEditFormEntityLoader :: Maybe Text
-  , bModelDeleteFormEntityLoader :: Maybe Text
-  , bModelAddFormDataJsonUrl :: Maybe Text
-  , bModelEditFormDataJsonUrl :: Maybe Text
-  , bModelDeleteFormDataJsonUrl :: Maybe Text
-  , bModelAddFormHasDefaultModel :: Bool
-  , bModelEditPostLoadsModel :: Bool
-  , bModelDeletePostLoadsModel :: Bool
-  , bModelAddPostExtraStoreFunc :: Maybe Text
-  , bModelEditPostExtraStoreFunc :: Maybe Text
-  , bModelAddFormTitleMsg :: Maybe Text
-  , bModelEditFormTitleMsg :: Maybe Text
-  , bModelDeleteFormTitleMsg :: Maybe Text
-  , bModelParentHsType :: Maybe Text
-  , bModelFormRouteHsType :: Text
+data BCrudModel = BCrudModel
+  { bCrudModelName :: Text
+  , bCrudModelLabel :: Text
+  , bCrudModelIsJson :: Bool
+  , bCrudModelDbUniquenesses :: [Text]
+  , bCrudModelDbHasHistoryTable :: Bool
+  , bCrudModelHsDerivings :: [Text]
+  , bCrudModelFields :: [BCrudField]
+  , bCrudModelAddFormArgs :: Maybe [BFuncArg]
+  , bCrudModelEditFormArgs :: Maybe [BFuncArg]
+  , bCrudModelAddFormEntityLoader :: Maybe Text
+  , bCrudModelEditFormEntityLoader :: Maybe Text
+  , bCrudModelDeleteFormEntityLoader :: Maybe Text
+  , bCrudModelAddFormDataJsonUrl :: Maybe Text
+  , bCrudModelEditFormDataJsonUrl :: Maybe Text
+  , bCrudModelDeleteFormDataJsonUrl :: Maybe Text
+  , bCrudModelAddFormHasDefaultModel :: Bool
+  , bCrudModelEditPostLoadsModel :: Bool
+  , bCrudModelDeletePostLoadsModel :: Bool
+  , bCrudModelAddPostExtraStoreFunc :: Maybe Text
+  , bCrudModelEditPostExtraStoreFunc :: Maybe Text
+  , bCrudModelAddFormTitleMsg :: Maybe Text
+  , bCrudModelEditFormTitleMsg :: Maybe Text
+  , bCrudModelDeleteFormTitleMsg :: Maybe Text
+  , bCrudModelParentHsType :: Maybe Text
+  , bCrudModelFormRouteHsType :: Text
   }
 
-instance ToJSON BModel where
+instance ToJSON BCrudModel where
   toJSON o = object
-    [ "name" .= bModelName o
-    , "nameCap" .= (upperFirst $ bModelName o)
-    , "label" .= bModelLabel o
-    , "isJson" .= bModelIsJson o
-    , "dbUniquenesses" .= bModelDbUniquenesses o
-    , "dbHasHistoryTable" .= bModelDbHasHistoryTable o
-    , "dbTableName" .= (TC.toQuietSnake $ TC.fromAny (Text.unpack $ bModelName o))
-    , "dbHistoryTableName" .= ((TC.toQuietSnake $ TC.fromAny (Text.unpack $ bModelName o)) ++ "_history")
+    [ "name" .= bCrudModelName o
+    , "nameCap" .= (upperFirst $ bCrudModelName o)
+    , "label" .= bCrudModelLabel o
+    , "isJson" .= bCrudModelIsJson o
+    , "dbUniquenesses" .= bCrudModelDbUniquenesses o
+    , "dbHasHistoryTable" .= bCrudModelDbHasHistoryTable o
+    , "dbTableName" .= (TC.toQuietSnake $ TC.fromAny (Text.unpack $ bCrudModelName o))
+    , "dbHistoryTableName" .= ((TC.toQuietSnake $ TC.fromAny (Text.unpack $ bCrudModelName o)) ++ "_history")
     , "dbFields" .= getDbFields o
-    , "dbUpdatableFields" .= (filter (\field -> case bFieldDb field of
-                                                  Just BFieldDb {bFieldDbCanUpdate = canUpdate} -> canUpdate && (M.isJust $ bFieldEditView field)
+    , "dbUpdatableFields" .= (filter (\field -> case bCrudFieldDb field of
+                                                  Just BCrudFieldDb {bCrudFieldDbCanUpdate = canUpdate} -> canUpdate && (M.isJust $ bCrudFieldEditView field)
                                                   Nothing -> False
-                                     ) $ bModelFields o)
+                                     ) $ bCrudModelFields o)
     , "hsAddAssignmentLines" .= getAddAssignmentLines o
-    , "hsDerivings" .= bModelHsDerivings o
-    , "fields" .= bModelFields o
-    , "addViewFields" .= (filter (\field -> M.isJust $ bFieldAddView field) $ bModelFields o)
-    , "editViewFields" .= (filter (\field -> M.isJust $ bFieldEditView field) $ bModelFields o)
-    , "isInDb" .= (L.any M.isJust $ L.map bFieldDb $ bModelFields o)
-    , "addFormArgs" .= bModelAddFormArgs o
-    , "editFormArgs" .= bModelEditFormArgs o
-    , "addFormEntityLoader" .= bModelAddFormEntityLoader o
-    , "editFormEntityLoader" .= bModelEditFormEntityLoader o
-    , "deleteFormEntityLoader" .= bModelDeleteFormEntityLoader o
-    , "addFormDataJsonUrl" .= bModelAddFormDataJsonUrl o
-    , "editFormDataJsonUrl" .= bModelEditFormDataJsonUrl o
-    , "deleteFormDataJsonUrl" .= bModelDeleteFormDataJsonUrl o
-    , "addFormHasDefaultModel" .= bModelAddFormHasDefaultModel o
-    , "editPostLoadsModel" .= bModelEditPostLoadsModel o
-    , "deletePostLoadsModel" .= bModelDeletePostLoadsModel o
-    , "addPostExtraStoreFunc" .= bModelAddPostExtraStoreFunc o
-    , "editPostExtraStoreFunc" .= bModelEditPostExtraStoreFunc o
-    , "addFormTitleMsg" .= bModelAddFormTitleMsg o
-    , "editFormTitleMsg" .= bModelEditFormTitleMsg o
-    , "deleteFormTitleMsg" .= bModelDeleteFormTitleMsg o
-    , "parentHsType" .= bModelParentHsType o
-    , "formRouteHsType" .= bModelFormRouteHsType o
+    , "hsDerivings" .= bCrudModelHsDerivings o
+    , "fields" .= bCrudModelFields o
+    , "addViewFields" .= (filter (\field -> M.isJust $ bCrudFieldAddView field) $ bCrudModelFields o)
+    , "editViewFields" .= (filter (\field -> M.isJust $ bCrudFieldEditView field) $ bCrudModelFields o)
+    , "isInDb" .= (L.any M.isJust $ L.map bCrudFieldDb $ bCrudModelFields o)
+    , "addFormArgs" .= bCrudModelAddFormArgs o
+    , "editFormArgs" .= bCrudModelEditFormArgs o
+    , "addFormEntityLoader" .= bCrudModelAddFormEntityLoader o
+    , "editFormEntityLoader" .= bCrudModelEditFormEntityLoader o
+    , "deleteFormEntityLoader" .= bCrudModelDeleteFormEntityLoader o
+    , "addFormDataJsonUrl" .= bCrudModelAddFormDataJsonUrl o
+    , "editFormDataJsonUrl" .= bCrudModelEditFormDataJsonUrl o
+    , "deleteFormDataJsonUrl" .= bCrudModelDeleteFormDataJsonUrl o
+    , "addFormHasDefaultModel" .= bCrudModelAddFormHasDefaultModel o
+    , "editPostLoadsModel" .= bCrudModelEditPostLoadsModel o
+    , "deletePostLoadsModel" .= bCrudModelDeletePostLoadsModel o
+    , "addPostExtraStoreFunc" .= bCrudModelAddPostExtraStoreFunc o
+    , "editPostExtraStoreFunc" .= bCrudModelEditPostExtraStoreFunc o
+    , "addFormTitleMsg" .= bCrudModelAddFormTitleMsg o
+    , "editFormTitleMsg" .= bCrudModelEditFormTitleMsg o
+    , "deleteFormTitleMsg" .= bCrudModelDeleteFormTitleMsg o
+    , "parentHsType" .= bCrudModelParentHsType o
+    , "formRouteHsType" .= bCrudModelFormRouteHsType o
     , "parentHsParamId" .= getParentHsParamId o
-    , "formHasProgressBar" .= (any (\field -> bFieldHsType field == "FileInfo") $ bModelFields o)
+    , "formHasProgressBar" .= (any (\field -> bCrudFieldHsType field == "FileInfo") $ bCrudModelFields o)
     ]
 
-getDbFields :: BModel -> [BField]
-getDbFields m = filter (M.isJust . bFieldDb) $ bModelFields m
+getDbFields :: BCrudModel -> [BCrudField]
+getDbFields m = filter (M.isJust . bCrudFieldDb) $ bCrudModelFields m
 
-getAddAssignmentLines :: BModel -> [Text]
+getAddAssignmentLines :: BCrudModel -> [Text]
 getAddAssignmentLines m =
-  (if M.isJust $ bModelParentHsType m then [ Text.concat [bModelName m, M.fromJust $ bModelParentHsType m, "Id", " = ", getParentHsParamId m]] else [])
+  (if M.isJust $ bCrudModelParentHsType m then [ Text.concat [bCrudModelName m, M.fromJust $ bCrudModelParentHsType m, "Id", " = ", getParentHsParamId m]] else [])
   ++
-  ( map (\f -> Text.concat [bModelName m, upperFirst $ bFieldName f, " = ",
-                            case bFieldAddView f of
-                              Just _ -> Text.concat ["vAdd", upperFirst $ bModelName m, upperFirst $ bFieldName f, " vAdd", upperFirst $ bModelName m]
+  ( map (\f -> Text.concat [bCrudModelName m, upperFirst $ bCrudFieldName f, " = ",
+                            case bCrudFieldAddView f of
+                              Just _ -> Text.concat ["vAdd", upperFirst $ bCrudModelName m, upperFirst $ bCrudFieldName f, " vAdd", upperFirst $ bCrudModelName m]
                               _ -> "Nothing"
                            ]
         )
-    $ filter (\f -> case bModelParentHsType m of
-                 Just hsType -> Text.concat [hsType, "Id"] /= bFieldHsType f
+    $ filter (\f -> case bCrudModelParentHsType m of
+                 Just hsType -> Text.concat [hsType, "Id"] /= bCrudFieldHsType f
                  _ -> True
              )
     $ getDbFields m
   )
 
 
-getParentHsParamId :: BModel -> Text
-getParentHsParamId m = case bModelParentHsType m of
+getParentHsParamId :: BCrudModel -> Text
+getParentHsParamId m = case bCrudModelParentHsType m of
                          Just parentHsType -> lowerFirst $ Text.append parentHsType "Id"
                          _ -> ""
 
@@ -234,81 +235,64 @@ instance ToJSON BFuncArg where
 
 
 
-data BFieldDb = BFieldDb
-  { bFieldDbIsNullable :: Bool
-  , bFieldDbDefault :: Maybe Text
-  , bFieldDbCanUpdate :: Bool
+data BCrudFieldDb = BCrudFieldDb
+  { bCrudFieldDbIsNullable :: Bool
+  , bCrudFieldDbDefault :: Maybe Text
+  , bCrudFieldDbCanUpdate :: Bool
   }
 
-instance ToJSON BFieldDb where
+instance ToJSON BCrudFieldDb where
   toJSON o = object
-    [ "isNullable" .= bFieldDbIsNullable o
-    , "isNotNullable" .= (not $ bFieldDbIsNullable o)
-    , "default" .= bFieldDbDefault o
-    , "canUpdate" .= bFieldDbCanUpdate o
+    [ "isNullable" .= bCrudFieldDbIsNullable o
+    , "isNotNullable" .= (not $ bCrudFieldDbIsNullable o)
+    , "default" .= bCrudFieldDbDefault o
+    , "canUpdate" .= bCrudFieldDbCanUpdate o
     ]
 
-data BFieldAddView = BFieldAddView
-  { bFieldAddViewIsRequired :: Bool
-  , bFieldAddViewIsDisabled :: Bool
-  , bFieldAddViewAttrs :: [BFieldAttr]
-  , bFieldAddViewDefault :: Maybe Text
+data BFieldView = BFieldView
+  { bFieldViewIsRequired :: Bool
+  , bFieldViewIsDisabled :: Bool
+  , bFieldViewAttrs :: [BFieldAttr]
+  , bFieldViewDefault :: Maybe Text
   }
 
-instance ToJSON BFieldAddView where
+instance ToJSON BFieldView where
   toJSON o = object
-    [ "isRequired" .= bFieldAddViewIsRequired o
-    , "isOptional" .= (not $ bFieldAddViewIsRequired o)
-    , "isDisabled" .= bFieldAddViewIsDisabled o
-    , "isEnabled" .= (not $ bFieldAddViewIsDisabled o)
-    , "attrs" .= ((if bFieldAddViewIsDisabled o then [BFieldAttr "disabled" ""] else [])
-                   ++ bFieldAddViewAttrs o)
-    , "default" .= bFieldAddViewDefault o
+    [ "isRequired" .= bFieldViewIsRequired o
+    , "isOptional" .= (not $ bFieldViewIsRequired o)
+    , "isDisabled" .= bFieldViewIsDisabled o
+    , "isEnabled" .= (not $ bFieldViewIsDisabled o)
+    , "attrs" .= ((if bFieldViewIsDisabled o then [BFieldAttr "disabled" ""] else [])
+                   ++ bFieldViewAttrs o)
+    , "default" .= bFieldViewDefault o
     ]
 
-data BFieldEditView = BFieldEditView
-  { bFieldEditViewIsRequired :: Bool
-  , bFieldEditViewIsDisabled :: Bool
-  , bFieldEditViewAttrs :: [BFieldAttr]
-  , bFieldEditViewDefault :: Maybe Text
+
+data BCrudField = BCrudField
+  { bCrudFieldName :: Text
+  , bCrudFieldLabelDe :: Maybe Text
+  , bCrudFieldLabelEn :: Maybe Text
+  , bCrudFieldHsType :: Text
+  , bCrudFieldDb :: Maybe BCrudFieldDb
+  , bCrudFieldFormFieldType :: Maybe Text
+  , bCrudFieldAddView :: Maybe BFieldView
+  , bCrudFieldEditView :: Maybe BFieldView
   }
 
-instance ToJSON BFieldEditView where
+instance ToJSON BCrudField where
   toJSON o = object
-    [ "isRequired" .= bFieldEditViewIsRequired o
-    , "isOptional" .= (not $ bFieldEditViewIsRequired o)
-    , "isDisabled" .= bFieldEditViewIsDisabled o
-    , "isEnabled" .= (not $ bFieldEditViewIsDisabled o)
-    , "attrs" .= ((if bFieldEditViewIsDisabled o then [BFieldAttr "disabled" ""] else [])
-                   ++ bFieldEditViewAttrs o)
-    , "default" .= bFieldEditViewDefault o
-    ]
-
-data BField = BField
-  { bFieldName :: Text
-  , bFieldLabelDe :: Maybe Text
-  , bFieldLabelEn :: Maybe Text
-  , bFieldHsType :: Text
-  , bFieldDb :: Maybe BFieldDb
-  , bFieldFormFieldType :: Maybe Text
-  , bFieldAddView :: Maybe BFieldAddView
-  , bFieldEditView :: Maybe BFieldEditView
-  }
-
-instance ToJSON BField where
-  toJSON o = object
-    [ "name" .= bFieldName o
-    , "nameCap" .= (upperFirst $ bFieldName o)
-    , "dbColumnName" .= (TC.toQuietSnake $ TC.fromAny (Text.unpack $ bFieldName o))
-    , "labelDe" .= bFieldLabelDe o
-    , "labelEn" .= bFieldLabelEn o
-    , "hsType" .= bFieldHsType o
-    , "db" .= bFieldDb o
-    , "formFieldType" .= bFieldFormFieldType o
-    , "addView" .= bFieldAddView o
-    , "editView" .= bFieldEditView o
-    , "isHsTypeBool" .= (bFieldHsType o == "Bool")
-    , "isForeignKey" .= ((Text.takeEnd 2 $ bFieldName o) == "Id")
+    [ "name" .= bCrudFieldName o
+    , "nameCap" .= (upperFirst $ bCrudFieldName o)
+    , "dbColumnName" .= (TC.toQuietSnake $ TC.fromAny (Text.unpack $ bCrudFieldName o))
+    , "labelDe" .= bCrudFieldLabelDe o
+    , "labelEn" .= bCrudFieldLabelEn o
+    , "hsType" .= bCrudFieldHsType o
+    , "db" .= bCrudFieldDb o
+    , "formFieldType" .= bCrudFieldFormFieldType o
+    , "addView" .= bCrudFieldAddView o
+    , "editView" .= bCrudFieldEditView o
+    , "isHsTypeBool" .= (bCrudFieldHsType o == "Bool")
+    , "isForeignKey" .= ((Text.takeEnd 2 $ bCrudFieldName o) == "Id")
     ]
 
 data BFieldAttr = BFieldAttr
