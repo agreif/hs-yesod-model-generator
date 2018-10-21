@@ -1,0 +1,11 @@
+{% include 'macros.gtmpl' -%}
+
+data V{{model.actionCap}}{{model.nameCap}} = V{{model.actionCap}}{{model.nameCap}}
+  { {{''}}
+  {%- for field in model.viewFields -%}
+    {{concat("v", model.actionCap, model.nameCap, field.nameCap, " :: ", field.view.isRequired ? '' : 'Maybe ', field.hsType)|prefixCommaUnlessLoopFirst}}
+  {% endfor -%}
+  }
+
+
+{{- '' -}}

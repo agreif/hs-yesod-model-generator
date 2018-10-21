@@ -1,11 +1,25 @@
 {% include 'macros.gtmpl' -%}
 
-{% set _formArgs = _formType == 'Add' ? model.addFormArgs : model.editFormArgs -%}
+{% if _formType == 'Add' -%}
+{% set _formArgs = model.addFormArgs -%}
+{% elif _formType == 'Edit' -%}
+{% set _formArgs = model.editFormArgs -%}
+{% else -%}
+{% set _formArgs = model.formArgs -%}
+{% endif -%}
 
 v{{_formType}}{{model.nameCap}}Form :: Maybe {{model.nameCap}} ->{% for arg in _formArgs %} {{arg.type}} ->{% endfor %} Html -> MForm Handler (FormResult V{{_formType}}{{model.nameCap}}, Widget)
 v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArgs %} {{arg.name}} {% endfor %} extra = do
   {%- for field in _fields %}
-  {%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+
+  {%- if _formType == 'Add' %}
+  {%- set _view = field.addView %}
+  {%- elif _formType == 'Edit' %}
+  {%- set _view = field.editView %}
+  {%- else %}
+  {%- set _view = field.view %}
+  {%- endif %}
+
   {%- if _view %}
   ({{field.name}}Result, {{field.name}}View) <- {{_view.isRequired ? 'mreq' : 'mopt'}}{{' '}}
       {%- if field.belongsTo %}
@@ -28,7 +42,15 @@ v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArg
   {%- endif %}
   let v{{_formType}}{{model.nameCap}}Result = V{{_formType}}{{model.nameCap}}
     {%- for field in _fields %}
-    {%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+
+    {%- if _formType == 'Add' %}
+    {%- set _view = field.addView %}
+    {%- elif _formType == 'Edit' %}
+    {%- set _view = field.editView %}
+    {%- else %}
+    {%- set _view = field.view %}
+    {%- endif %}
+
     {%- if _view -%}
         {{loop.first ? ' <$> ' : ' <*> '}}{{field.name}}Result
     {%- endif -%}
@@ -42,7 +64,16 @@ v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArg
     ^{fvInput versionView}
     {%- endif %}
     {%- for field in _fields %}
-    {%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+
+
+    {%- if _formType == 'Add' %}
+    {%- set _view = field.addView %}
+    {%- elif _formType == 'Edit' %}
+    {%- set _view = field.editView %}
+    {%- else %}
+    {%- set _view = field.view %}
+    {%- endif %}
+
     {%- if _view %}
     <div .uk-margin-small :not $ null $ fvErrors {{field.name}}View:.uk-form-danger>
       <label .uk-form-label :not $ null $ fvErrors {{field.name}}View:.uk-text-danger for=#{fvId {{field.name}}View}>#{fvLabel {{field.name}}View}
@@ -59,7 +90,15 @@ v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArg
       {{ field.name ~ 'Options = optionsPersistKey [] [Asc ' ~ field.belongsTo.modelCap ~ field.belongsTo.sortFieldCap ~ '] ' ~ field.belongsTo.model ~ field.belongsTo.dispFieldCap }}
     {% endfor -%}
     {%- for field in _fields %}
-    {%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+
+    {%- if _formType == 'Add' %}
+    {%- set _view = field.addView %}
+    {%- elif _formType == 'Edit' %}
+    {%- set _view = field.editView %}
+    {%- else %}
+    {%- set _view = field.view %}
+    {%- endif %}
+
     {%- if _view %}
     {{field.name}}Fs :: FieldSettings App
     {{field.name}}Fs = FieldSettings
@@ -86,7 +125,15 @@ v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArg
 
 data Msg{{_formType}}{{model.nameCap}} =
 {%- for field in _fields %}
-{%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+
+{%- if _formType == 'Add' %}
+{%- set _view = field.addView %}
+{%- elif _formType == 'Edit' %}
+{%- set _view = field.editView %}
+{%- else %}
+{%- set _view = field.view %}
+{%- endif %}
+
 {%- if _view %}
   {{('Msg' ~ _formType ~ model.nameCap ~ field.nameCap)|prefixGuardUnlessLoopLast -}}
 {% endif %}
@@ -101,7 +148,15 @@ instance RenderMessage App Msg{{_formType}}{{model.nameCap}} where
 
 render{{_formType}}{{model.nameCap}}German :: {{'Msg' ~ _formType ~ model.nameCap}} -> Text
 {% for field in _fields -%}
-{%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+
+{%- if _formType == 'Add' %}
+{%- set _view = field.addView %}
+{%- elif _formType == 'Edit' %}
+{%- set _view = field.editView %}
+{%- else %}
+{%- set _view = field.view %}
+{%- endif %}
+
 {%- if _view -%}
 render{{_formType}}{{model.nameCap}}German {{'Msg' ~ _formType ~ model.nameCap ~ field.nameCap }} = "{{field.labelDe}}"
 {% endif %}
@@ -109,7 +164,15 @@ render{{_formType}}{{model.nameCap}}German {{'Msg' ~ _formType ~ model.nameCap ~
 
 render{{_formType}}{{model.nameCap}}English :: {{'Msg' ~ _formType ~ model.nameCap }} -> Text
 {% for field in _fields %}
-{%- set _view = _formType == 'Add' ? field.addView : field.editView %}
+
+{%- if _formType == 'Add' %}
+{%- set _view = field.addView %}
+{%- elif _formType == 'Edit' %}
+{%- set _view = field.editView %}
+{%- else %}
+{%- set _view = field.view %}
+{%- endif %}
+
 {%- if _view -%}
 render{{_formType}}{{model.nameCap}}English {{'Msg' ~ _formType ~ model.nameCap ~ field.nameCap }} = "{{field.labelEn}}"
 {% endif %}
