@@ -100,14 +100,26 @@ lowerFirst t = Text.append (Text.toLower $ Text.take 1 t) (Text.drop 1 t)
 
 data BContext = BContext
   { bContextCrudModels :: [BCrudModel]
+  , bContextActionModels :: [BActionModel]
   , bContextTranslations :: [BTranslation]
   }
 
 instance ToJSON BContext where
   toJSON o = object $
     [ "crudModels" .= bContextCrudModels o
+    , "actionModels" .= bContextActionModels o
     , "translations" .= bContextTranslations o
-    ] ++ (map (\bCrudModel@(BCrudModel {bCrudModelName = modelName}) -> (modelName <> "Model") .= bCrudModel) $ bContextCrudModels o)
+    ]
+    ++
+    ( map
+      (\bCrudModel@(BCrudModel {bCrudModelName = modelName}) -> (modelName <> "Model") .= bCrudModel)
+      $ bContextCrudModels o
+    )
+    ++
+    ( map
+      (\bActionModel@(BActionModel {bActionModelName = modelName}) -> (modelName <> "Model") .= bActionModel)
+      $ bContextActionModels o
+    )
 
 data BCrudModel = BCrudModel
   { bCrudModelName :: Text
@@ -179,6 +191,50 @@ instance ToJSON BCrudModel where
     , "parentHsParamId" .= getParentHsParamId o
     , "formHasProgressBar" .= (any (\field -> bCrudFieldHsType field == "FileInfo") $ bCrudModelFields o)
     ]
+
+
+
+
+data BActionModel = BActionModel
+  { bActionModelName :: Text
+  , bActionModelLabel :: Text
+  , bActionModelAction :: Text
+  , bActionModelFields :: [BActionField]
+  , bActionModelFormArgs :: Maybe [BFuncArg]
+  , bActionModelFormEntityLoader :: Maybe Text
+  , bActionModelFormDataJsonUrl :: Maybe Text
+  , bActionModelFormHasDefaultModel :: Bool
+  , bActionModelPostExtraStoreFunc :: Maybe Text
+  , bActionModelFormTitleMsg :: Maybe Text
+  , bActionModelFormRouteHsType :: Text
+  }
+
+instance ToJSON BActionModel where
+  toJSON o = object
+    [ "name" .= bActionModelName o
+    , "nameCap" .= (upperFirst $ bActionModelName o)
+    , "label" .= bActionModelLabel o
+    , "action" .= bActionModelAction o
+    , "actionCap" .= (upperFirst $ bActionModelAction o)
+    , "fields" .= bActionModelFields o
+    , "viewFields" .= (filter (\field -> M.isJust $ bActionFieldView field) $ bActionModelFields o)
+    , "formArgs" .= bActionModelFormArgs o
+    , "formEntityLoader" .= bActionModelFormEntityLoader o
+    , "formDataJsonUrl" .= bActionModelFormDataJsonUrl o
+    , "formHasDefaultModel" .= bActionModelFormHasDefaultModel o
+    , "postExtraStoreFunc" .= bActionModelPostExtraStoreFunc o
+    , "formTitleMsg" .= bActionModelFormTitleMsg o
+    , "formRouteHsType" .= bActionModelFormRouteHsType o
+    , "formHasProgressBar" .= (any (\field -> bActionFieldHsType field == "FileInfo") $ bActionModelFields o)
+    ]
+
+
+
+
+
+
+
+
 
 getDbFields :: BCrudModel -> [BCrudField]
 getDbFields m = filter (M.isJust . bCrudFieldDb) $ bCrudModelFields m
@@ -294,6 +350,31 @@ instance ToJSON BCrudField where
     , "isHsTypeBool" .= (bCrudFieldHsType o == "Bool")
     , "isForeignKey" .= ((Text.takeEnd 2 $ bCrudFieldName o) == "Id")
     ]
+
+
+data BActionField = BActionField
+  { bActionFieldName :: Text
+  , bActionFieldLabelDe :: Maybe Text
+  , bActionFieldLabelEn :: Maybe Text
+  , bActionFieldHsType :: Text
+  , bActionFieldFormFieldType :: Maybe Text
+  , bActionFieldView :: Maybe BFieldView
+  }
+
+instance ToJSON BActionField where
+  toJSON o = object
+    [ "name" .= bActionFieldName o
+    , "nameCap" .= (upperFirst $ bActionFieldName o)
+    , "labelDe" .= bActionFieldLabelDe o
+    , "labelEn" .= bActionFieldLabelEn o
+    , "hsType" .= bActionFieldHsType o
+    , "formFieldType" .= bActionFieldFormFieldType o
+    , "view" .= bActionFieldView o
+    , "isHsTypeBool" .= (bActionFieldHsType o == "Bool")
+    ]
+
+
+
 
 data BFieldAttr = BFieldAttr
   { bFieldAttrKey :: Text

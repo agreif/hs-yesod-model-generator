@@ -27,7 +27,13 @@ data Translation = Translation
   {{loop.first ? "{ " : "" -}}
   {{('msgGlobal' ~ translation.keyCap)|prefixCommaUnlessLoopFirst}} :: Maybe Text
 {%- endfor -%}
+
 {%- for model in crudModels %}
+{%- for field in model.fields %}
+  {{', msg' ~ model.nameCap ~ field.nameCap}} :: Maybe Text
+{%- endfor %}
+{%- endfor %}
+{%- for model in actionModels %}
 {%- for field in model.fields %}
   {{', msg' ~ model.nameCap ~ field.nameCap}} :: Maybe Text
 {%- endfor %}
@@ -42,7 +48,13 @@ translationDe = Translation
   {{loop.first ? "{ " : "" -}}
   {{('msgGlobal' ~ translation.keyCap)|prefixCommaUnlessLoopFirst}} = Just "{{translation.de}}"
 {%- endfor -%}
+
 {%- for model in crudModels %}
+{%- for field in model.fields %}
+  {{', msg' ~ model.nameCap ~ field.nameCap}} = {{field.labelDe ? 'Just "' ~ field.labelDe ~ '"' : 'Nothing'}}
+{%- endfor %}
+{%- endfor %}
+{%- for model in actionModels %}
 {%- for field in model.fields %}
   {{', msg' ~ model.nameCap ~ field.nameCap}} = {{field.labelDe ? 'Just "' ~ field.labelDe ~ '"' : 'Nothing'}}
 {%- endfor %}
@@ -56,6 +68,11 @@ translationEn = Translation
   {{('msgGlobal' ~ translation.keyCap)|prefixCommaUnlessLoopFirst}} = Just "{{translation.en}}"
 {%- endfor -%}
 {%- for model in crudModels %}
+{%- for field in model.fields %}
+  {{', msg' ~ model.nameCap ~ field.nameCap}} = {{field.labelDe ? 'Just "' ~ field.labelEn ~ '"' : 'Nothing'}}
+{%- endfor %}
+{%- endfor %}
+{%- for model in actionModels %}
 {%- for field in model.fields %}
   {{', msg' ~ model.nameCap ~ field.nameCap}} = {{field.labelDe ? 'Just "' ~ field.labelEn ~ '"' : 'Nothing'}}
 {%- endfor %}
