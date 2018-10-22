@@ -1,0 +1,41 @@
+{% include 'macros.gtmpl' -%}
+
+data AppMessage =
+{%- for translation in translations %}
+  {{('Msg' ~ translation.keyCap)|prefixGuardUnlessLoopLast -}}
+{%- endfor %}
+
+renderMessageGerman :: AppMessage -> Text
+{%- for translation in translations %}
+renderMessageGerman {{'Msg' ~ translation.keyCap}} = "{{translation.de}}"
+{%- endfor %}
+
+renderMessageEnglish :: AppMessage -> Text
+{%- for translation in translations %}
+renderMessageEnglish {{'Msg' ~ translation.keyCap}} = "{{translation.en}}"
+{%- endfor %}
+
+data Translation = Translation
+{%- for translation in translations %}
+  {{loop.first ? "{ " : "" -}}
+  {{('msg' ~ translation.keyCap)|prefixCommaUnlessLoopFirst}} :: Text
+{%- endfor %}
+  } deriving Generic
+
+instance ToJSON Translation
+
+translationDe :: Translation
+translationDe = Translation
+{%- for translation in translations %}
+  {{loop.first ? "{ " : "" -}}
+  {{('msg' ~ translation.keyCap)|prefixCommaUnlessLoopFirst}} = "{{translation.de}}"
+{%- endfor -%}
+  }
+
+translationEn :: Translation
+translationEn = Translation
+{%- for translation in translations %}
+  {{loop.first ? "{ " : "" -}}
+  {{('msg' ~ translation.keyCap)|prefixCommaUnlessLoopFirst}} = "{{translation.en}}"
+{%- endfor -%}
+  }
