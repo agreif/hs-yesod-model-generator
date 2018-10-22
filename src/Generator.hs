@@ -101,14 +101,61 @@ lowerFirst t = Text.append (Text.toLower $ Text.take 1 t) (Text.drop 1 t)
 data BContext = BContext
   { bContextCrudModels :: [BCrudModel]
   , bContextActionModels :: [BActionModel]
-  , bContextTranslations :: [BTranslation]
+  , bContextGlobalTranslations :: [BTranslation]
   }
 
 instance ToJSON BContext where
   toJSON o = object $
     [ "crudModels" .= bContextCrudModels o
     , "actionModels" .= bContextActionModels o
-    , "translations" .= bContextTranslations o
+    , "translations" .=
+      ( ( map (\translation@(BTranslation {bTranslationKey = tk})
+               -> translation {bTranslationKey = Text.concat ["global", upperFirst tk]})
+          $ bContextGlobalTranslations o
+        )
+        ++
+        ( foldl (\acc i -> acc ++ i) [] $
+          map (\(BCrudModel
+                  { bCrudModelName = modelName
+                  , bCrudModelFields = fields }
+                 ) -> map (\BCrudField { bCrudFieldName = fieldName
+                                       , bCrudFieldLabelDe = labelDe
+                                       , bCrudFieldLabelEn = labelEn }
+                           -> BTranslation
+                              { bTranslationKey = Text.concat
+                                                  [modelName , upperFirst fieldName]
+                              , bTranslationDe = case labelDe of
+                                                   Just label -> label
+                                                   _ -> ""
+                              , bTranslationEn = case labelEn of
+                                                   Just label -> label
+                                                   _ -> ""
+                              }
+                          ) fields
+               ) $ bContextCrudModels o
+        )
+        ++
+        ( foldl (\acc i -> acc ++ i) [] $
+          map (\(BActionModel
+                  { bActionModelName = modelName
+                  , bActionModelFields = fields }
+                 ) -> map (\BActionField { bActionFieldName = fieldName
+                                       , bActionFieldLabelDe = labelDe
+                                       , bActionFieldLabelEn = labelEn }
+                           -> BTranslation
+                              { bTranslationKey = Text.concat
+                                                  [modelName , upperFirst fieldName]
+                              , bTranslationDe = case labelDe of
+                                                   Just label -> label
+                                                   _ -> ""
+                              , bTranslationEn = case labelEn of
+                                                   Just label -> label
+                                                   _ -> ""
+                              }
+                          ) fields
+               ) $ bContextActionModels o
+        )
+      )
     ]
     ++
     ( map
@@ -128,7 +175,6 @@ data BCrudModel = BCrudModel
   , bCrudModelDbUniquenesses :: [Text]
   , bCrudModelDbHasHistoryTable :: Bool
   , bCrudModelHsDerivings :: [Text]
-  , bCrudModelFields :: [BCrudField]
   , bCrudModelAddFormArgs :: Maybe [BFuncArg]
   , bCrudModelEditFormArgs :: Maybe [BFuncArg]
   , bCrudModelAddFormEntityLoader :: Maybe Text
@@ -147,6 +193,7 @@ data BCrudModel = BCrudModel
   , bCrudModelDeleteFormTitleMsg :: Maybe Text
   , bCrudModelParentHsType :: Maybe Text
   , bCrudModelFormRouteHsType :: Text
+  , bCrudModelFields :: [BCrudField]
   }
 
 instance ToJSON BCrudModel where
@@ -159,11 +206,6 @@ instance ToJSON BCrudModel where
     , "dbHasHistoryTable" .= bCrudModelDbHasHistoryTable o
     , "dbTableName" .= (TC.toQuietSnake $ TC.fromAny (Text.unpack $ bCrudModelName o))
     , "dbHistoryTableName" .= ((TC.toQuietSnake $ TC.fromAny (Text.unpack $ bCrudModelName o)) ++ "_history")
-    , "dbFields" .= getDbFields o
-    , "dbUpdatableFields" .= (filter (\field -> case bCrudFieldDb field of
-                                                  Just BCrudFieldDb {bCrudFieldDbCanUpdate = canUpdate} -> canUpdate && (M.isJust $ bCrudFieldEditView field)
-                                                  Nothing -> False
-                                     ) $ bCrudModelFields o)
     , "hsAddAssignmentLines" .= getAddAssignmentLines o
     , "hsDerivings" .= bCrudModelHsDerivings o
     , "fields" .= bCrudModelFields o
@@ -187,6 +229,11 @@ instance ToJSON BCrudModel where
     , "editFormTitleMsg" .= bCrudModelEditFormTitleMsg o
     , "deleteFormTitleMsg" .= bCrudModelDeleteFormTitleMsg o
     , "parentHsType" .= bCrudModelParentHsType o
+    , "dbFields" .= getDbFields o
+    , "dbUpdatableFields" .= (filter (\field -> case bCrudFieldDb field of
+                                                  Just BCrudFieldDb {bCrudFieldDbCanUpdate = canUpdate} -> canUpdate && (M.isJust $ bCrudFieldEditView field)
+                                                  Nothing -> False
+                                     ) $ bCrudModelFields o)
     , "formRouteHsType" .= bCrudModelFormRouteHsType o
     , "parentHsParamId" .= getParentHsParamId o
     , "formHasProgressBar" .= (any (\field -> bCrudFieldHsType field == "FileInfo") $ bCrudModelFields o)

@@ -102,7 +102,7 @@ v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArg
     {%- if _view %}
     {{field.name}}Fs :: FieldSettings App
     {{field.name}}Fs = FieldSettings
-      { fsLabel = SomeMessage {{'Msg' ~ _formType ~ model.nameCap ~ field.nameCap}}
+      { fsLabel = SomeMessage {{'Msg' ~ model.nameCap ~ field.nameCap}}
       , fsTooltip = Nothing
       , fsId = Just "{{field.name}}"
       , fsName = Just "{{field.name}}"
@@ -122,60 +122,5 @@ v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArg
       , fsAttrs = []
       }
     {%- endif %}
-
-data Msg{{_formType}}{{model.nameCap}} =
-{%- for field in _fields %}
-
-{%- if _formType == 'Add' %}
-{%- set _view = field.addView %}
-{%- elif _formType == 'Edit' %}
-{%- set _view = field.editView %}
-{%- else %}
-{%- set _view = field.view %}
-{%- endif %}
-
-{%- if _view %}
-  {{('Msg' ~ _formType ~ model.nameCap ~ field.nameCap)|prefixGuardUnlessLoopLast -}}
-{% endif %}
-{%- endfor %}
-
-instance RenderMessage App Msg{{_formType}}{{model.nameCap}} where
-  renderMessage _ []        = render{{_formType}}{{model.nameCap}}German
-  renderMessage _ ("de":_) = render{{_formType}}{{model.nameCap}}German
-  renderMessage _ ("en":_) = render{{_formType}}{{model.nameCap}}English
-  renderMessage _ ("en-US":_) = render{{_formType}}{{model.nameCap}}English
-  renderMessage m (_   :ls) = renderMessage m ls
-
-render{{_formType}}{{model.nameCap}}German :: {{'Msg' ~ _formType ~ model.nameCap}} -> Text
-{% for field in _fields -%}
-
-{%- if _formType == 'Add' %}
-{%- set _view = field.addView %}
-{%- elif _formType == 'Edit' %}
-{%- set _view = field.editView %}
-{%- else %}
-{%- set _view = field.view %}
-{%- endif %}
-
-{%- if _view -%}
-render{{_formType}}{{model.nameCap}}German {{'Msg' ~ _formType ~ model.nameCap ~ field.nameCap }} = "{{field.labelDe}}"
-{% endif %}
-{%- endfor %}
-
-render{{_formType}}{{model.nameCap}}English :: {{'Msg' ~ _formType ~ model.nameCap }} -> Text
-{% for field in _fields %}
-
-{%- if _formType == 'Add' %}
-{%- set _view = field.addView %}
-{%- elif _formType == 'Edit' %}
-{%- set _view = field.editView %}
-{%- else %}
-{%- set _view = field.view %}
-{%- endif %}
-
-{%- if _view -%}
-render{{_formType}}{{model.nameCap}}English {{'Msg' ~ _formType ~ model.nameCap ~ field.nameCap }} = "{{field.labelEn}}"
-{% endif %}
-{%- endfor %}
 
 {{- '' -}}
