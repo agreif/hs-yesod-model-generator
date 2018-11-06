@@ -136,6 +136,21 @@ instance ToJSON BContext where
         )
         ++
         ( foldl (\acc i -> acc ++ i) [] $
+          map (\BCrudModel {bCrudModelTranslations = maybeTranslations, bCrudModelName = modelName} ->
+                  case maybeTranslations of
+                    Just translations ->
+                      map (\translation ->
+                             BTranslation
+                              { bTranslationKey = Text.concat [modelName , upperFirst $ bTranslationKey translation]
+                              , bTranslationDe = bTranslationDe translation
+                              , bTranslationEn = bTranslationEn translation
+                              }
+                          ) translations
+                    _ -> []
+              ) $ bContextCrudModels o
+        )
+        ++
+        ( foldl (\acc i -> acc ++ i) [] $
           map (\(BActionModel
                   { bActionModelName = modelName
                   , bActionModelFields = fields }
@@ -154,6 +169,21 @@ instance ToJSON BContext where
                               }
                           ) fields
                ) $ bContextActionModels o
+        )
+        ++
+        ( foldl (\acc i -> acc ++ i) [] $
+          map (\BActionModel {bActionModelTranslations = maybeTranslations, bActionModelName = modelName} ->
+                  case maybeTranslations of
+                    Just translations ->
+                      map (\translation ->
+                             BTranslation
+                              { bTranslationKey = Text.concat [modelName , upperFirst $ bTranslationKey translation]
+                              , bTranslationDe = bTranslationDe translation
+                              , bTranslationEn = bTranslationEn translation
+                              }
+                          ) translations
+                    _ -> []
+              ) $ bContextActionModels o
         )
       )
     ]
@@ -194,6 +224,7 @@ data BCrudModel = BCrudModel
   , bCrudModelParentHsType :: Maybe Text
   , bCrudModelFormRouteHsType :: Text
   , bCrudModelFields :: [BCrudField]
+  , bCrudModelTranslations :: Maybe [BTranslation]
   }
 
 instance ToJSON BCrudModel where
@@ -254,6 +285,7 @@ data BActionModel = BActionModel
   , bActionModelPostExtraStoreFunc :: Maybe Text
   , bActionModelFormTitleMsg :: Maybe Text
   , bActionModelFormRouteHsType :: Text
+  , bActionModelTranslations :: Maybe [BTranslation]
   }
 
 instance ToJSON BActionModel where
