@@ -3,13 +3,13 @@
 getAdd{{model.nameCap}}FormR :: {{ model.parentHsType ? model.parentHsType ~ 'Id -> ' : '' -}} Handler Html
 getAdd{{model.nameCap}}FormR {{ model.parentHsParamId ? model.parentHsParamId ~ ' ' : '' -}} = do
   {% if model.addFormHasDefaultModel -%}
-  defaultAddModel <- defaultAdd{{model.nameCap}}{{ model.parentHsParamId ? ' ' ~ model.parentHsParamId : '' }}
+  defaultMaybeAddModel <- defaultAdd{{model.nameCap}}{{ model.parentHsParamId ? ' ' ~ model.parentHsParamId : '' }}
   {% endif -%}
   {% if model.addFormEntityLoader -%}
   {{ model.addFormEntityLoader }}
   {% else %}
   {%- endif -%}
-  (formWidget, _) <- generateFormPost $ vAdd{{model.nameCap}}Form ({{ model.addFormHasDefaultModel ? 'Just defaultAddModel' : 'Nothing'}}){% for arg in model.addFormArgs %} {{arg.name}}{% endfor %}
+  (formWidget, _) <- generateFormPost $ vAdd{{model.nameCap}}Form ({{ model.addFormHasDefaultModel ? 'defaultMaybeAddModel' : 'Nothing'}}){% for arg in model.addFormArgs %} {{arg.name}}{% endfor %}
   formLayout $ do
     toWidget [whamlet|
       <h1>{%- if model.addFormTitleMsg %}{{ shakesMsg(model.addFormTitleMsg) }}{% else %}Add {{model.label}}{% endif %}
