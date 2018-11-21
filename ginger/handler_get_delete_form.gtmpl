@@ -8,7 +8,7 @@ getDelete{{model.nameCap}}FormR {{model.name}}Id = do
   (formWidget, _) <- generateFormPost $ vDelete{{model.nameCap}}Form
   formLayout $ do
     toWidget [whamlet|
-      <h1>{%- if model.deleteFormTitleMsg %}{{ shakesMsg(model.deleteFormTitleMsg) }}{% else %}Delete {{model.label}}{% endif %}
+      <h1>{%- if model.deleteFormTitleMsg %}{{ shakesMsg(model.deleteFormTitleMsg) }}{% else %}Delete {{model.nameCap}}{% endif %}
       <form #modal-form .uk-form-horizontal method=post action={{shakesUrl(model.formRouteHsType ~ ' $ Delete' ~ model.nameCap ~ 'R ' ~ model.name ~ 'Id')}}>
         <div #modal-form-widget>
           ^{formWidget}

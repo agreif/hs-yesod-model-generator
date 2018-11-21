@@ -200,7 +200,6 @@ instance ToJSON BContext where
 
 data BCrudModel = BCrudModel
   { bCrudModelName :: Text
-  , bCrudModelLabel :: Text
   , bCrudModelIsJson :: Bool
   , bCrudModelDbUniquenesses :: [Text]
   , bCrudModelDbHasHistoryTable :: Bool
@@ -231,7 +230,6 @@ instance ToJSON BCrudModel where
   toJSON o = object
     [ "name" .= bCrudModelName o
     , "nameCap" .= (upperFirst $ bCrudModelName o)
-    , "label" .= bCrudModelLabel o
     , "isJson" .= bCrudModelIsJson o
     , "dbUniquenesses" .= bCrudModelDbUniquenesses o
     , "dbHasHistoryTable" .= bCrudModelDbHasHistoryTable o
@@ -275,7 +273,6 @@ instance ToJSON BCrudModel where
 
 data BActionModel = BActionModel
   { bActionModelName :: Text
-  , bActionModelLabel :: Text
   , bActionModelAction :: Text
   , bActionModelFields :: [BActionField]
   , bActionModelFormArgs :: Maybe [BFuncArg]
@@ -292,7 +289,6 @@ instance ToJSON BActionModel where
   toJSON o = object
     [ "name" .= bActionModelName o
     , "nameCap" .= (upperFirst $ bActionModelName o)
-    , "label" .= bActionModelLabel o
     , "action" .= bActionModelAction o
     , "actionCap" .= (upperFirst $ bActionModelAction o)
     , "fields" .= bActionModelFields o
