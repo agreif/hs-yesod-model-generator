@@ -9,8 +9,8 @@ get{{model.actionCap}}{{model.nameCap}}FormR {{ model.parentHsParamId ? model.pa
   {{ model.formEntityLoader }}
   {% else %}
   {%- endif -%}
-  (formWidget, _) <- generateFormPost $ v{{model.actionCap}}{{model.nameCap}}Form ({{ model.formHasDefaultModel ? 'Just default' ~ model.actionCap ~ 'Model' : 'Nothing'}}){% for arg in model.formArgs %} {{arg.name}}{% endfor %}
-  formLayout $ do
+  (formWidget, _) <- generateFormPost $ v{{model.actionCap}}{{model.nameCap}}Form ({{ model.formHasDefaultModel ? 'default' ~ model.actionCap ~ 'Model' : 'Nothing'}}){% for arg in model.formArgs %} {{arg.name}}{% endfor %}
+  formLayout $
     toWidget [whamlet|
       <h1>{%- if model.formTitleMsg %}{{ shakesMsg(model.formTitleMsg) }}{% else %}{{model.actionCap}} {{model.nameCap}}{% endif %}
       <form #modal-form .uk-form-horizontal method=post onsubmit="return false;" action={{shakesUrl(model.formRouteHsType ~ ' $ ' ~ model.actionCap ~ model.nameCap ~ 'R' ~ (model.parentHsParamId ? ' ' ~ model.parentHsParamId : ''))}}>
