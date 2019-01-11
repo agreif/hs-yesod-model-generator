@@ -10,7 +10,7 @@ getAdd{{model.nameCap}}FormR {{ model.parentHsParamId ? model.parentHsParamId ~ 
   {% else %}
   {%- endif -%}
   (formWidget, _) <- generateFormPost $ vAdd{{model.nameCap}}Form {{ model.addFormHasDefaultModel ? 'defaultMaybeAddModel' : 'Nothing'}}{% for arg in model.addFormArgs %} {{arg.name}}{% endfor %}
-  formLayout $ do
+  formLayout $
     toWidget [whamlet|
       <h1>{%- if model.addFormTitleMsg %}{{ shakesMsg(model.addFormTitleMsg) }}{% else %}Add {{model.nameCap}}{% endif %}
       <form #modal-form .uk-form-horizontal method=post onsubmit="return false;" action={{shakesUrl(model.formRouteHsType ~ ' $ Add' ~ model.nameCap ~ 'R' ~ (model.parentHsParamId ? ' ' ~ model.parentHsParamId : ''))}}>
