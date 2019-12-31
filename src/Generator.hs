@@ -215,6 +215,8 @@ data BCrudModel = BCrudModel
   , bCrudModelAddFormHasDefaultModel :: Bool
   , bCrudModelEditPostLoadsModel :: Bool
   , bCrudModelDeletePostLoadsModel :: Bool
+  , bCrudModelAddPostExtraValidateFunc :: Maybe Text
+  , bCrudModelEditPostExtraValidateFunc :: Maybe Text
   , bCrudModelAddPostExtraStoreFunc :: Maybe Text
   , bCrudModelEditPostExtraStoreFunc :: Maybe Text
   , bCrudModelAddFormTitleMsg :: Maybe Text
@@ -252,6 +254,8 @@ instance ToJSON BCrudModel where
     , "addFormHasDefaultModel" .= bCrudModelAddFormHasDefaultModel o
     , "editPostLoadsModel" .= bCrudModelEditPostLoadsModel o
     , "deletePostLoadsModel" .= bCrudModelDeletePostLoadsModel o
+    , "addPostExtraValidateFunc" .= bCrudModelAddPostExtraValidateFunc o
+    , "editPostExtraValidateFunc" .= bCrudModelEditPostExtraValidateFunc o
     , "addPostExtraStoreFunc" .= bCrudModelAddPostExtraStoreFunc o
     , "editPostExtraStoreFunc" .= bCrudModelEditPostExtraStoreFunc o
     , "addFormTitleMsg" .= bCrudModelAddFormTitleMsg o
@@ -279,7 +283,6 @@ data BActionModel = BActionModel
   , bActionModelFormEntityLoader :: Maybe Text
   , bActionModelFormDataJsonUrl :: Maybe Text
   , bActionModelFormHasDefaultModel :: Bool
-  , bActionModelPostExtraStoreFunc :: Maybe Text
   , bActionModelFormTitleMsg :: Maybe Text
   , bActionModelFormRouteHsType :: Text
   , bActionModelTranslations :: Maybe [BTranslation]
@@ -297,7 +300,6 @@ instance ToJSON BActionModel where
     , "formEntityLoader" .= bActionModelFormEntityLoader o
     , "formDataJsonUrl" .= bActionModelFormDataJsonUrl o
     , "formHasDefaultModel" .= bActionModelFormHasDefaultModel o
-    , "postExtraStoreFunc" .= bActionModelPostExtraStoreFunc o
     , "formTitleMsg" .= bActionModelFormTitleMsg o
     , "formRouteHsType" .= bActionModelFormRouteHsType o
     , "formHasProgressBar" .= (any (\field -> bActionFieldHsType field == "FileInfo") $ bActionModelFields o)
