@@ -21,9 +21,6 @@ postAdd{{model.nameCap}}R {{ model.parentHsParamId ? model.parentHsParamId ~ ' '
             , {{model.name}}UpdatedAt = curTime
             , {{model.name}}UpdatedBy = userIdent authUser
             }
-      {%- if model.addPostExtraValidateFunc %}
-      {{model.addPostExtraValidateFunc}}
-      {%- endif %}
       runDB $ do
         {%- if model.addPostExtraStoreFunc %}
         {{model.name}}Id <- insert {{model.name}}

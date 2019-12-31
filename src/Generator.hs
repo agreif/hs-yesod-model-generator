@@ -215,8 +215,6 @@ data BCrudModel = BCrudModel
   , bCrudModelAddFormHasDefaultModel :: Bool
   , bCrudModelEditPostLoadsModel :: Bool
   , bCrudModelDeletePostLoadsModel :: Bool
-  , bCrudModelAddPostExtraValidateFunc :: Maybe Text
-  , bCrudModelEditPostExtraValidateFunc :: Maybe Text
   , bCrudModelAddPostExtraStoreFunc :: Maybe Text
   , bCrudModelEditPostExtraStoreFunc :: Maybe Text
   , bCrudModelAddFormTitleMsg :: Maybe Text
@@ -254,8 +252,6 @@ instance ToJSON BCrudModel where
     , "addFormHasDefaultModel" .= bCrudModelAddFormHasDefaultModel o
     , "editPostLoadsModel" .= bCrudModelEditPostLoadsModel o
     , "deletePostLoadsModel" .= bCrudModelDeletePostLoadsModel o
-    , "addPostExtraValidateFunc" .= bCrudModelAddPostExtraValidateFunc o
-    , "editPostExtraValidateFunc" .= bCrudModelEditPostExtraValidateFunc o
     , "addPostExtraStoreFunc" .= bCrudModelAddPostExtraStoreFunc o
     , "editPostExtraStoreFunc" .= bCrudModelEditPostExtraStoreFunc o
     , "addFormTitleMsg" .= bCrudModelAddFormTitleMsg o

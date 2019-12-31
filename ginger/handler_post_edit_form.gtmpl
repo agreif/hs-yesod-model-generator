@@ -12,9 +12,6 @@ postEdit{{model.nameCap}}R {{model.name}}Id = do
       {% if model.editPostLoadsModel -%}
       {{ model.name }} <- runDB $ get404 {{model.name}}Id
       {% endif -%}
-      {% if model.editPostExtraValidateFunc -%}
-      {{model.editPostExtraValidateFunc}}
-      {% endif -%}
       let persistFields = [
         {%- for field in model.dbUpdatableFields %}
             {{prefixCommaUnlessLoopFirst()}}{{model.nameCap}}{{field.nameCap}} =. vEdit{{model.nameCap}}{{field.nameCap}} vEdit{{model.nameCap}}
