@@ -23,7 +23,7 @@ postAdd{{model.nameCap}}R {{ model.parentHsParamId ? model.parentHsParamId ~ ' '
             }
       {%- if model.addPostExtraValidateFunc %}
       {{model.addPostExtraValidateFunc}}
-      {% endif %}
+      {%- endif %}
       runDB $ do
         {%- if model.addPostExtraStoreFunc %}
         {{model.name}}Id <- insert {{model.name}}
