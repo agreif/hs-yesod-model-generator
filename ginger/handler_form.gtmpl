@@ -75,12 +75,13 @@ v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArg
     {%- endif %}
 
     {%- if _view %}
-    <div .uk-margin-small :not $ null $ fvErrors {{field.name}}View:.uk-form-danger>
-      <label .uk-form-label :not $ null $ fvErrors {{field.name}}View:.uk-text-danger for=#{fvId {{field.name}}View}>#{fvLabel {{field.name}}View}
+    <div #{{field.name}}InputWidget .uk-margin-small :not $ null $ fvErrors {{field.name}}View:.uk-form-danger>
+      <label #{{field.name}}InputLabel .uk-form-label :not $ null $ fvErrors {{field.name}}View:.uk-text-danger for=#{fvId {{field.name}}View}>#{fvLabel {{field.name}}View}
       <div .uk-form-controls>
         ^{fvInput {{field.name}}View}
-        $maybe err <- fvErrors {{field.name}}View
-          &nbsp;#{err}
+        <span #{{field.name}}InputError>
+          $maybe err <- fvErrors {{field.name}}View
+            &nbsp;#{err}
     {%- endif -%}
     {%- endfor %}
     |]
