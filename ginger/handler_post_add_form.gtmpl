@@ -6,7 +6,7 @@ postAdd{{model.nameCap}}R {{ model.parentHsParamId ? model.parentHsParamId ~ ' '
   case result of
     FormSuccess vAdd{{model.nameCap}} -> do
       curTime <- liftIO getCurrentTime
-      maybeCurRoute <- getCurrentRoute
+      -- maybeCurRoute <- getCurrentRoute
       Entity _ authUser <- requireAuth
       urlRenderer <- getUrlRender
       let {{model.name}} = {{model.nameCap}}
