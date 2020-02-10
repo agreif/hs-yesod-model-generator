@@ -258,13 +258,13 @@ instance ToJSON BCrudModel where
     , "editFormTitleMsg" .= bCrudModelEditFormTitleMsg o
     , "deleteFormTitleMsg" .= bCrudModelDeleteFormTitleMsg o
     , "parentHsType" .= bCrudModelParentHsType o
+    , "parentHsParamId" .= getCrudParentHsParamId o
     , "dbFields" .= getDbFields o
     , "dbUpdatableFields" .= (filter (\field -> case bCrudFieldDb field of
                                                   Just BCrudFieldDb {bCrudFieldDbCanUpdate = canUpdate} -> canUpdate && (M.isJust $ bCrudFieldEditView field)
                                                   Nothing -> False
                                      ) $ bCrudModelFields o)
     , "formRouteHsType" .= bCrudModelFormRouteHsType o
-    , "parentHsParamId" .= getParentHsParamId o
     , "formHasProgressBar" .= (any (\field -> bCrudFieldHsType field == "FileInfo") $ bCrudModelFields o)
     ]
 
@@ -280,6 +280,7 @@ data BActionModel = BActionModel
   , bActionModelFormDataJsonUrl :: Maybe Text
   , bActionModelFormHasDefaultModel :: Bool
   , bActionModelFormTitleMsg :: Maybe Text
+  , bActionModelParentHsType :: Maybe Text
   , bActionModelFormRouteHsType :: Text
   , bActionModelTranslations :: Maybe [BTranslation]
   }
@@ -297,6 +298,8 @@ instance ToJSON BActionModel where
     , "formDataJsonUrl" .= bActionModelFormDataJsonUrl o
     , "formHasDefaultModel" .= bActionModelFormHasDefaultModel o
     , "formTitleMsg" .= bActionModelFormTitleMsg o
+    , "parentHsType" .= bActionModelParentHsType o
+    , "parentHsParamId" .= getActionParentHsParamId o
     , "formRouteHsType" .= bActionModelFormRouteHsType o
     , "formHasProgressBar" .= (any (\field -> bActionFieldHsType field == "FileInfo") $ bActionModelFields o)
     ]
@@ -314,7 +317,7 @@ getDbFields m = filter (M.isJust . bCrudFieldDb) $ bCrudModelFields m
 
 getAddAssignmentLines :: BCrudModel -> [Text]
 getAddAssignmentLines m =
-  (if M.isJust $ bCrudModelParentHsType m then [ Text.concat [bCrudModelName m, M.fromJust $ bCrudModelParentHsType m, "Id", " = ", getParentHsParamId m]] else [])
+  (if M.isJust $ bCrudModelParentHsType m then [ Text.concat [bCrudModelName m, M.fromJust $ bCrudModelParentHsType m, "Id", " = ", getCrudParentHsParamId m]] else [])
   ++
   ( map (\f -> Text.concat [bCrudModelName m, upperFirst $ bCrudFieldName f, " = ",
                             case bCrudFieldAddView f of
@@ -330,8 +333,13 @@ getAddAssignmentLines m =
   )
 
 
-getParentHsParamId :: BCrudModel -> Text
-getParentHsParamId m = case bCrudModelParentHsType m of
+getCrudParentHsParamId :: BCrudModel -> Text
+getCrudParentHsParamId m = case bCrudModelParentHsType m of
+                         Just parentHsType -> lowerFirst $ Text.append parentHsType "Id"
+                         _ -> ""
+
+getActionParentHsParamId :: BActionModel -> Text
+getActionParentHsParamId m = case bActionModelParentHsType m of
                          Just parentHsType -> lowerFirst $ Text.append parentHsType "Id"
                          _ -> ""
 
