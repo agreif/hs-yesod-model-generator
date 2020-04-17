@@ -1,7 +1,7 @@
 {% include 'macros.gtmpl' -%}
 
-postEdit{{model.nameCap}}R :: {{model.nameCap}}Id -> Handler Value
-postEdit{{model.nameCap}}R {{model.name}}Id = do
+postEdit{{model.nameCap}}R :: {{model.nameCap}}Id -> {% for arg in model.editHandlerArgs %} {{arg.type}} -> {% endfor %} Handler Value
+postEdit{{model.nameCap}}R {{model.name}}Id {% for arg in model.editHandlerArgs %} {{arg.name}} {% endfor %} = do
   ((result, formWidget), _) <- runFormPost $ vEdit{{model.nameCap}}Form Nothing{% for arg in model.editFormArgs %} Nothing{% endfor %}
   case result of
     FormSuccess vEdit{{model.nameCap}} -> do
