@@ -6,7 +6,9 @@ postEdit{{model.nameCap}}R {{model.name}}Id {% for arg in model.editHandlerArgs 
   case result of
     FormSuccess vEdit{{model.nameCap}} -> do
       curTime <- liftIO getCurrentTime
-      -- maybeCurRoute <- getCurrentRoute
+      {% if model.editPostNeedsCurRoute %}
+      maybeCurRoute <- getCurrentRoute
+      {% endif %}
       Entity _ authUser <- requireAuth
       urlRenderer <- getUrlRender
       {% if model.editPostLoadsModel -%}
