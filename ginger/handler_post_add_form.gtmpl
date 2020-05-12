@@ -26,7 +26,7 @@ postAdd{{model.nameCap}}R {{ model.parentHsParamId ? model.parentHsParamId ~ ' '
       runDB $ do
         {%- if model.addPostExtraStoreFunc %}
         {{model.name}}Id <- insert {{model.name}}
-        {{model.addPostExtraStoreFunc}}
+        {{model.addPostExtraStoreFunc}} {{model.name}}Id
         {% else %}
         _ <- insert {{model.name}}
         {% endif -%}
