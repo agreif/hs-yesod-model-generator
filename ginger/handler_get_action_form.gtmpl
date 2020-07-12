@@ -3,7 +3,7 @@
 get{{model.actionCap}}{{model.nameCap}}FormR :: {{ model.parentHsType ? model.parentHsType ~ 'Id -> ' : '' -}} {% for arg in model.handlerArgs %} {{arg.type}} -> {% endfor %} Handler Html
 get{{model.actionCap}}{{model.nameCap}}FormR {{ model.parentHsParamId ? model.parentHsParamId ~ ' ' : '' -}} {% for arg in model.handlerArgs %} {{arg.name}} {% endfor %} = do
   {% if model.formHasDefaultModel -%}
-  default{{model.actionCap}}Model <- default{{model.actionCap}}{{model.nameCap}}{{ model.parentHsParamId ? ' ' ~ model.parentHsParamId : '' -}} {% for arg in model.handlerArgs %} {{arg.name}} {% endfor -%}
+  default{{model.actionCap}}Model <- default{{model.actionCap}}{{model.nameCap}}{{ model.parentHsParamId ? ' ' ~ model.parentHsParamId : '' -}} {% for arg in model.handlerArgs %} {{arg.name}} {% endfor %}
   {% endif -%}
   {% if model.formEntityLoader -%}
   {{ model.formEntityLoader }}
