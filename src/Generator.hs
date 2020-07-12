@@ -313,6 +313,7 @@ data BActionModel = BActionModel
   { bActionModelName :: Text,
     bActionModelAction :: Text,
     bActionModelFields :: [BActionField],
+    bActionModelHandlerArgs :: Maybe [BFuncArg],
     bActionModelFormArgs :: Maybe [BFuncArg],
     bActionModelFormEntityLoader :: Maybe Text,
     bActionModelFormDataJsonUrl :: Maybe Text,
@@ -332,6 +333,12 @@ instance ToJSON BActionModel where
         "actionCap" .= (upperFirst $ bActionModelAction o),
         "fields" .= bActionModelFields o,
         "viewFields" .= (filter (\field -> M.isJust $ bActionFieldView field) $ bActionModelFields o),
+        "handlerArgs" .= bActionModelHandlerArgs o,
+        "handlerArgsStr"
+          .= ( case bActionModelHandlerArgs o of
+                 Just args -> Just $ Text.intercalate " " $ L.map bFuncArgName args
+                 _ -> Nothing
+             ),
         "formArgs" .= bActionModelFormArgs o,
         "formEntityLoader" .= bActionModelFormEntityLoader o,
         "formDataJsonUrl" .= bActionModelFormDataJsonUrl o,
