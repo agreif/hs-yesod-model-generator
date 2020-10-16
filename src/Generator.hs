@@ -74,17 +74,16 @@ loadFile fn = do
   SIOE.tryIOError (loadFile' $ "ginger/" ++ fn) >>= \e ->
     case e of
       Right contents -> return contents
-      Left err -> do
+      Left err ->
         case L.lookup fn cachedFileContents of
           Just content -> return $ UTF8.toString content
           _ -> return $ show err
   where
     loadFile' :: FilePath -> IO String
-    loadFile' fn' = do
+    loadFile' fn' =
       SIO.withFile fn' SIO.ReadMode $ \h -> do
         SIO.hSetEncoding h SIO.utf8_bom
-        contents <- SIOS.hGetContents h
-        return contents
+        SIOS.hGetContents h
 
 getCachedFileContents :: IO [(FilePath, Data.ByteString.ByteString)]
 getCachedFileContents = do
@@ -116,18 +115,17 @@ instance ToJSON BContext where
         "actionModels" .= bContextActionModels o,
         "translations"
           .= ( ( map
-                   ( \translation@(BTranslation {bTranslationKey = tk}) ->
+                   ( \translation@BTranslation {bTranslationKey = tk} ->
                        translation {bTranslationKey = Text.concat ["global", upperFirst tk]}
                    )
                    $ bContextGlobalTranslations o
                )
-                 ++ ( foldl (\acc i -> acc ++ i) []
+                 ++ ( concat
                         $ map
-                          ( \( BCrudModel
-                                 { bCrudModelName = modelName,
-                                   bCrudModelFields = fields
-                                 }
-                               ) ->
+                          ( \BCrudModel
+                               { bCrudModelName = modelName,
+                                 bCrudModelFields = fields
+                               } ->
                                 map
                                   ( \BCrudField
                                        { bCrudFieldName = fieldName,
@@ -150,7 +148,35 @@ instance ToJSON BContext where
                           )
                         $ bContextCrudModels o
                     )
-                 ++ ( foldl (\acc i -> acc ++ i) []
+                 ++ ( concat
+                        $ map
+                          ( \BCrudModel
+                               { bCrudModelName = modelName,
+                                 bCrudModelFields = fields
+                               } ->
+                                map
+                                  ( \BCrudField
+                                       { bCrudFieldName = fieldName,
+                                         bCrudFieldInfoDe = infoDe,
+                                         bCrudFieldInfoEn = infoEn
+                                       } ->
+                                        BTranslation
+                                          { bTranslationKey =
+                                              Text.concat
+                                                [modelName, upperFirst fieldName <> "InputInfo"],
+                                            bTranslationDe = case infoDe of
+                                              Just info -> info
+                                              _ -> "",
+                                            bTranslationEn = case infoEn of
+                                              Just info -> info
+                                              _ -> ""
+                                          }
+                                  )
+                                  fields
+                          )
+                        $ bContextCrudModels o
+                    )
+                 ++ ( concat
                         $ map
                           ( \BCrudModel {bCrudModelTranslations = maybeTranslations, bCrudModelName = modelName} ->
                               case maybeTranslations of
@@ -168,13 +194,12 @@ instance ToJSON BContext where
                           )
                         $ bContextCrudModels o
                     )
-                 ++ ( foldl (\acc i -> acc ++ i) []
+                 ++ ( concat
                         $ map
-                          ( \( BActionModel
-                                 { bActionModelName = modelName,
-                                   bActionModelFields = fields
-                                 }
-                               ) ->
+                          ( \BActionModel
+                               { bActionModelName = modelName,
+                                 bActionModelFields = fields
+                               } ->
                                 map
                                   ( \BActionField
                                        { bActionFieldName = fieldName,
@@ -197,32 +222,63 @@ instance ToJSON BContext where
                           )
                         $ bContextActionModels o
                     )
-                 ++ ( foldl (\acc i -> acc ++ i) []
+                 ++ ( concat
                         $ map
-                          ( \BActionModel {bActionModelTranslations = maybeTranslations, bActionModelName = modelName} ->
-                              case maybeTranslations of
-                                Just translations ->
-                                  map
-                                    ( \translation ->
+                          ( \BActionModel
+                               { bActionModelName = modelName,
+                                 bActionModelFields = fields
+                               } ->
+                                map
+                                  ( \BActionField
+                                       { bActionFieldName = fieldName,
+                                         bActionFieldInfoDe = infoDe,
+                                         bActionFieldInfoEn = infoEn
+                                       } ->
                                         BTranslation
-                                          { bTranslationKey = Text.concat [modelName, upperFirst $ bTranslationKey translation],
-                                            bTranslationDe = bTranslationDe translation,
-                                            bTranslationEn = bTranslationEn translation
+                                          { bTranslationKey =
+                                              Text.concat
+                                                [modelName, upperFirst fieldName <> "InputInfo"],
+                                            bTranslationDe = case infoDe of
+                                              Just info -> info
+                                              _ -> "",
+                                            bTranslationEn = case infoEn of
+                                              Just info -> info
+                                              _ -> ""
                                           }
-                                    )
-                                    translations
-                                _ -> []
+                                  )
+                                  fields
+                          )
+                        $ bContextActionModels o
+                    )
+                 ++ ( concat
+                        $ map
+                          ( \BActionModel
+                               { bActionModelTranslations = maybeTranslations,
+                                 bActionModelName = modelName
+                               } ->
+                                case maybeTranslations of
+                                  Just translations ->
+                                    map
+                                      ( \translation ->
+                                          BTranslation
+                                            { bTranslationKey = Text.concat [modelName, upperFirst $ bTranslationKey translation],
+                                              bTranslationDe = bTranslationDe translation,
+                                              bTranslationEn = bTranslationEn translation
+                                            }
+                                      )
+                                      translations
+                                  _ -> []
                           )
                         $ bContextActionModels o
                     )
              )
       ]
         ++ ( map
-               (\bCrudModel@(BCrudModel {bCrudModelName = modelName}) -> (modelName <> "Model") .= bCrudModel)
+               (\bCrudModel@BCrudModel {bCrudModelName = modelName} -> (modelName <> "Model") .= bCrudModel)
                $ bContextCrudModels o
            )
         ++ ( map
-               (\bActionModel@(BActionModel {bActionModelName = modelName}) -> (modelName <> "Model") .= bActionModel)
+               (\bActionModel@BActionModel {bActionModelName = modelName} -> (modelName <> "Model") .= bActionModel)
                $ bContextActionModels o
            )
 
@@ -271,8 +327,8 @@ instance ToJSON BCrudModel where
         "hsAddAssignmentLines" .= getAddAssignmentLines o,
         "hsDerivings" .= bCrudModelHsDerivings o,
         "fields" .= bCrudModelFields o,
-        "addViewFields" .= (filter (\field -> M.isJust $ bCrudFieldAddView field) $ bCrudModelFields o),
-        "editViewFields" .= (filter (\field -> M.isJust $ bCrudFieldEditView field) $ bCrudModelFields o),
+        "addViewFields" .= (filter (M.isJust . bCrudFieldAddView) $ bCrudModelFields o),
+        "editViewFields" .= (filter (M.isJust . bCrudFieldEditView) $ bCrudModelFields o),
         "isInDb" .= (L.any M.isJust $ L.map bCrudFieldDb $ bCrudModelFields o),
         "addFormArgs" .= bCrudModelAddFormArgs o,
         "editFormArgs" .= bCrudModelEditFormArgs o,
@@ -300,7 +356,8 @@ instance ToJSON BCrudModel where
         "dbUpdatableFields"
           .= ( filter
                  ( \field -> case bCrudFieldDb field of
-                     Just BCrudFieldDb {bCrudFieldDbCanUpdate = canUpdate} -> canUpdate && (M.isJust $ bCrudFieldEditView field)
+                     Just BCrudFieldDb {bCrudFieldDbCanUpdate = canUpdate} ->
+                       canUpdate && (M.isJust $ bCrudFieldEditView field)
                      Nothing -> False
                  )
                  $ bCrudModelFields o
@@ -332,7 +389,7 @@ instance ToJSON BActionModel where
         "action" .= bActionModelAction o,
         "actionCap" .= (upperFirst $ bActionModelAction o),
         "fields" .= bActionModelFields o,
-        "viewFields" .= (filter (\field -> M.isJust $ bActionFieldView field) $ bActionModelFields o),
+        "viewFields" .= (filter (M.isJust . bActionFieldView) $ bActionModelFields o),
         "handlerArgs" .= bActionModelHandlerArgs o,
         "handlerArgsStr"
           .= ( case bActionModelHandlerArgs o of
@@ -355,7 +412,10 @@ getDbFields m = filter (M.isJust . bCrudFieldDb) $ bCrudModelFields m
 
 getAddAssignmentLines :: BCrudModel -> [Text]
 getAddAssignmentLines m =
-  (if M.isJust $ bCrudModelParentHsType m then [Text.concat [bCrudModelName m, M.fromJust $ bCrudModelParentHsType m, "Id", " = ", getCrudParentHsParamId m]] else [])
+  ( if M.isJust $ bCrudModelParentHsType m
+      then [Text.concat [bCrudModelName m, M.fromJust $ bCrudModelParentHsType m, "Id", " = ", getCrudParentHsParamId m]]
+      else []
+  )
     ++ ( map
            ( \f ->
                Text.concat
@@ -452,6 +512,8 @@ data BCrudField = BCrudField
   { bCrudFieldName :: Text,
     bCrudFieldLabelDe :: Maybe Text,
     bCrudFieldLabelEn :: Maybe Text,
+    bCrudFieldInfoDe :: Maybe Text,
+    bCrudFieldInfoEn :: Maybe Text,
     bCrudFieldHsType :: Text,
     bCrudFieldDb :: Maybe BCrudFieldDb,
     bCrudFieldFormFieldType :: Maybe Text,
@@ -467,6 +529,8 @@ instance ToJSON BCrudField where
         "dbColumnName" .= (TC.toQuietSnake $ TC.fromAny (Text.unpack $ bCrudFieldName o)),
         "labelDe" .= bCrudFieldLabelDe o,
         "labelEn" .= bCrudFieldLabelEn o,
+        "infoDe" .= bCrudFieldInfoDe o,
+        "infoEn" .= bCrudFieldInfoEn o,
         "hsType" .= bCrudFieldHsType o,
         "db" .= bCrudFieldDb o,
         "formFieldType" .= bCrudFieldFormFieldType o,
@@ -480,6 +544,8 @@ data BActionField = BActionField
   { bActionFieldName :: Text,
     bActionFieldLabelDe :: Maybe Text,
     bActionFieldLabelEn :: Maybe Text,
+    bActionFieldInfoDe :: Maybe Text,
+    bActionFieldInfoEn :: Maybe Text,
     bActionFieldHsType :: Text,
     bActionFieldFormFieldType :: Maybe Text,
     bActionFieldView :: Maybe BFieldView
@@ -492,6 +558,8 @@ instance ToJSON BActionField where
         "nameCap" .= (upperFirst $ bActionFieldName o),
         "labelDe" .= bActionFieldLabelDe o,
         "labelEn" .= bActionFieldLabelEn o,
+        "infoDe" .= bActionFieldInfoDe o,
+        "infoEn" .= bActionFieldInfoEn o,
         "hsType" .= bActionFieldHsType o,
         "formFieldType" .= bActionFieldFormFieldType o,
         "view" .= bActionFieldView o,

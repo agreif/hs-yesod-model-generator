@@ -79,6 +79,8 @@ v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArg
       <label #{{field.name}}InputLabel .uk-form-label :not $ null $ fvErrors {{field.name}}View:.uk-text-danger for=#{fvId {{field.name}}View}>#{fvLabel {{field.name}}View}
       <div .uk-form-controls>
         ^{fvInput {{field.name}}View}
+        <span #{{field.name}}InputInfo .uk-margin-left>
+          {{'_{Msg' ~ model.nameCap ~ field.nameCap ~ 'InputInfo}'}}
         <span #{{field.name}}InputError>
           $maybe err <- fvErrors {{field.name}}View
             &nbsp;#{err}
