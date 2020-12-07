@@ -8,8 +8,8 @@
 {% set _formArgs = model.formArgs -%}
 {% endif -%}
 
-v{{_formType}}{{model.nameCap}}Form :: Maybe {{model.nameCap}} ->{% for arg in _formArgs %} {{arg.type}} ->{% endfor %} Html -> MForm Handler (FormResult V{{_formType}}{{model.nameCap}}, Widget)
-v{{_formType}}{{model.nameCap}}Form maybe{{model.nameCap}}{% for arg in _formArgs %} {{arg.name}} {% endfor %} extra = do
+v{{_formType}}{{model.nameCap}}Form :: {% if _formType == 'Add' || _formType == 'Edit' %} Maybe {{model.nameCap}}Id -> {% endif %} Maybe {{model.nameCap}} -> {% for arg in _formArgs %} {{arg.type}} ->{% endfor %} Html -> MForm Handler (FormResult V{{_formType}}{{model.nameCap}}, Widget)
+v{{_formType}}{{model.nameCap}}Form {% if _formType == 'Add' || _formType == 'Edit' %} maybe{{model.nameCap}}Id {% endif %} maybe{{model.nameCap}} {% for arg in _formArgs %} {{arg.name}} {% endfor %} extra = do
   {%- for field in _fields %}
 
   {%- if _formType == 'Add' %}

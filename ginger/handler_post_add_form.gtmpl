@@ -2,7 +2,7 @@
 
 postAdd{{model.nameCap}}R :: {{ model.parentHsType ? model.parentHsType ~ 'Id -> ' : '' -}} {% for arg in model.addHandlerArgs %} {{arg.type}} -> {% endfor %} Handler Value
 postAdd{{model.nameCap}}R {{ model.parentHsParamId ? model.parentHsParamId ~ ' ' : '' -}} {% for arg in model.addHandlerArgs %} {{arg.name}} {% endfor %} = do
-  ((result, formWidget), _) <- runFormPost $ vAdd{{model.nameCap}}Form Nothing{% for arg in model.addFormArgs %} Nothing{% endfor %}
+  ((result, formWidget), _) <- runFormPost $ vAdd{{model.nameCap}}Form Nothing Nothing {% for arg in model.addFormArgs %} Nothing {% endfor %}
   case result of
     FormSuccess vAdd{{model.nameCap}} -> do
       curTime <- liftIO getCurrentTime

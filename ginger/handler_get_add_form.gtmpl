@@ -9,7 +9,7 @@ getAdd{{model.nameCap}}FormR {{ model.parentHsParamId ? model.parentHsParamId ~ 
   {{ model.addFormEntityLoader }}
   {% else %}
   {%- endif -%}
-  (formWidget, _) <- generateFormPost $ vAdd{{model.nameCap}}Form {{ model.addFormHasDefaultModel ? 'defaultMaybeAddModel' : 'Nothing'}}{% for arg in model.addFormArgs %} {{arg.name}}{% endfor %}
+  (formWidget, _) <- generateFormPost $ vAdd{{model.nameCap}}Form Nothing {{ model.addFormHasDefaultModel ? 'defaultMaybeAddModel' : 'Nothing'}} {% for arg in model.addFormArgs %} {{arg.name}} {% endfor %}
   formLayout $
     toWidget [whamlet|
       <h1>{%- if model.addFormTitleMsg %}{{ shakesMsg(model.addFormTitleMsg) }}{% else %}Add {{model.nameCap}}{% endif %}

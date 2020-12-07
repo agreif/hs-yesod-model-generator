@@ -2,7 +2,7 @@
 
 postEdit{{model.nameCap}}R :: {{model.nameCap}}Id -> {% for arg in model.editHandlerArgs %} {{arg.type}} -> {% endfor %} Handler Value
 postEdit{{model.nameCap}}R {{model.name}}Id {% for arg in model.editHandlerArgs %} {{arg.name}} {% endfor %} = do
-  ((result, formWidget), _) <- runFormPost $ vEdit{{model.nameCap}}Form Nothing{% for arg in model.editFormArgs %} Nothing{% endfor %}
+  ((result, formWidget), _) <- runFormPost $ vEdit{{model.nameCap}}Form (Just {{model.name}}Id) Nothing {% for arg in model.editFormArgs %} Nothing {% endfor %}
   case result of
     FormSuccess vEdit{{model.nameCap}} -> do
       curTime <- liftIO getCurrentTime
