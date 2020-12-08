@@ -79,10 +79,11 @@ v{{_formType}}{{model.nameCap}}Form {% if _formType == 'Add' || _formType == 'Ed
       <label #{{field.name}}InputLabel .uk-form-label :not $ null $ fvErrors {{field.name}}View:.uk-text-danger for=#{fvId {{field.name}}View}>#{fvLabel {{field.name}}View}
       <div .uk-form-controls>
         ^{fvInput {{field.name}}View}
-        <span #{{field.name}}InputInfo .uk-margin-left>
+        <span #{{field.name}}InputInfo .uk-margin-left .uk-text-small .input-info>
           {{'_{Msg' ~ model.nameCap ~ field.nameCap ~ 'InputInfo}'}}
-        <span #{{field.name}}InputError>
-          $maybe err <- fvErrors {{field.name}}View
+        $maybe err <- fvErrors {{field.name}}View
+          <br>
+          <span #{{field.name}}InputError .uk-text-small .input-error>
             &nbsp;#{err}
     {%- endif -%}
     {%- endfor %}
