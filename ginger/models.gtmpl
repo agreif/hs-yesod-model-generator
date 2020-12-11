@@ -36,6 +36,7 @@
     createdBy Text
     updatedAt UTCTime
     updatedBy Text
+    dbAction Text default='UPDATE' MigrationOnly
 {%- endif -%}
 {%- endif -%}
 {% endfor %}

@@ -1,9 +1,17 @@
 postDelete{{model.nameCap}}R :: {{model.nameCap}}Id -> Handler Value
 postDelete{{model.nameCap}}R {{model.name}}Id = do
+  curTime <- liftIO getCurrentTime
+  Entity _ authUser <- requireAuth
   {% if model.deletePostLoadsModel -%}
   {{ model.name }} <- runDB $ get404 {{model.name}}Id
   {% endif -%}
-  runDB $ delete {{model.name}}Id
+  runDB $ do
+    -- trick to record the user deleting the entity
+    updateWhere
+      [ {{model.nameCap}}Id ==. {{model.name}}Id ]
+      [ {{model.nameCap}}UpdatedAt =. curTime,
+        {{model.nameCap}}UpdatedBy =. userIdent authUser ]
+    delete {{model.name}}Id
   urlRenderer <- getUrlRender
   returnJson $ VFormSubmitSuccess { fsSuccessDataJsonUrl = urlRenderer $ {{model.deleteFormDataJsonUrl}} }
 

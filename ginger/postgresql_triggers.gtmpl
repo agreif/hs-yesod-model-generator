@@ -13,17 +13,23 @@ as $function$
        if to_regclass('{{model.dbHistoryTableName}}') is not null then
            if (TG_OP = 'UPDATE' or TG_OP = 'INSERT') then
                 insert into {{model.dbHistoryTableName}}
-                       (id, {% for field in model.fields %}{% if field.db %}{{field.dbColumnName|prefixCommaUnlessLoopFirst}}{% endif %}{% endfor %}, version, created_at, created_by, updated_at, updated_by)
+                       (id, {% for field in model.fields %}{% if field.db %}{{field.dbColumnName|prefixCommaUnlessLoopFirst}}{% endif %}{% endfor %}, version, created_at, created_by, updated_at, updated_by, db_action)
                        values
-                       (new.id, {% for field in model.fields %}{% if field.db %}{{('new.' ~ field.dbColumnName)|prefixCommaUnlessLoopFirst}}{% endif %}{% endfor %}, new.version, new.created_at, new.created_by, new.updated_at, new.updated_by);
+                       (new.id, {% for field in model.fields %}{% if field.db %}{{('new.' ~ field.dbColumnName)|prefixCommaUnlessLoopFirst}}{% endif %}{% endfor %}, new.version, new.created_at, new.created_by, new.updated_at, new.updated_by, TG_OP);
                 return new;
-            end if;
+           elsif (TG_OP = 'DELETE') then
+                insert into {{model.dbHistoryTableName}}
+                       (id, {% for field in model.fields %}{% if field.db %}{{field.dbColumnName|prefixCommaUnlessLoopFirst}}{% endif %}{% endfor %}, version, created_at, created_by, updated_at, updated_by, db_action)
+                       values
+                       (old.id, {% for field in model.fields %}{% if field.db %}{{('old.' ~ field.dbColumnName)|prefixCommaUnlessLoopFirst}}{% endif %}{% endfor %}, old.version, old.created_at, old.created_by, old.updated_at, old.updated_by, TG_OP);
+               return old;
+           end if;
        end if;
        return null; -- result is ignored since this is an after trigger
     end;
 $function$;
 
-create trigger audit_{{model.dbTableName}} after insert or update on public.{{model.dbTableName}} for each row execute procedure public.process_audit_{{model.dbTableName}}();
+create trigger audit_{{model.dbTableName}} after insert or update or delete on public.{{model.dbTableName}} for each row execute procedure public.process_audit_{{model.dbTableName}}();
 
 {%- endif -%}
 {%- endif -%}
