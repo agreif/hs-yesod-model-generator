@@ -76,7 +76,7 @@ v{{_formType}}{{model.nameCap}}Form {% if _formType == 'Add' || _formType == 'Ed
 
     {%- if _view %}
     <div #{{field.name}}InputWidget .uk-margin-small :not $ null $ fvErrors {{field.name}}View:.uk-form-danger>
-      <label #{{field.name}}InputLabel .uk-form-label :not $ null $ fvErrors {{field.name}}View:.uk-text-danger for=#{fvId {{field.name}}View}>#{fvLabel {{field.name}}View}
+      <label #{{field.name}}InputLabel .{{model.name}}-form-label .uk-form-label :not $ null $ fvErrors {{field.name}}View:.uk-text-danger for=#{fvId {{field.name}}View}>#{fvLabel {{field.name}}View}
       <div .uk-form-controls>
         ^{fvInput {{field.name}}View}
         <span #{{field.name}}InputInfo .uk-margin-left .uk-text-small .input-info>
