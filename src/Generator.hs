@@ -525,8 +525,8 @@ instance ToJSON BCrudField where
   toJSON o =
     object
       [ "name" .= bCrudFieldName o,
-        "nameCap" .= (upperFirst $ bCrudFieldName o),
-        "dbColumnName" .= (TC.toQuietSnake $ TC.fromAny (Text.unpack $ bCrudFieldName o)),
+        "nameCap" .= upperFirst (bCrudFieldName o),
+        "dbColumnName" .= TC.toQuietSnake (TC.fromAny (Text.unpack $ bCrudFieldName o)),
         "labelDe" .= bCrudFieldLabelDe o,
         "labelEn" .= bCrudFieldLabelEn o,
         "infoDe" .= bCrudFieldInfoDe o,
@@ -537,7 +537,7 @@ instance ToJSON BCrudField where
         "addView" .= bCrudFieldAddView o,
         "editView" .= bCrudFieldEditView o,
         "isHsTypeBool" .= (bCrudFieldHsType o == "Bool"),
-        "isForeignKey" .= ((Text.takeEnd 2 $ bCrudFieldName o) == "Id")
+        "isForeignKey" .= ((Text.takeEnd 2 (bCrudFieldName o) == "Id") && (Text.takeEnd 2 (bCrudFieldHsType o) == "Id"))
       ]
 
 data BActionField = BActionField
